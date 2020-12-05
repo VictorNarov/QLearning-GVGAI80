@@ -4,6 +4,7 @@
 /oneclickRunFromJavaClient.bat
 /oneclickRunFromJavaClient.sh
 /ontology/
+/qlearning/
 /sampleLearner/
 /sampleRandom/
 /serialization/
@@ -13,5 +14,3 @@
 /tools/
 /tracks/
 /utils/
-/victormanuel/
-/qlearning/

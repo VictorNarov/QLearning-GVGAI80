@@ -17,6 +17,12 @@ public class Agent extends AbstractPlayer {
 	ArrayList<Observation>[] inmov;
 	Dimension dim;
 	
+	private int numFilas;
+	private int numCol;
+	private int blockSize;
+	
+	private char[][] mapaObstaculos;
+	
     /**
      * Random generator for the agent.
      */
@@ -39,7 +45,17 @@ public class Agent extends AbstractPlayer {
         actions = so.getAvailableActions();
         inmov = so.getImmovablePositions();
         dim = so.getWorldDimension();
-       
+
+        blockSize = so.getBlockSize();
+        
+		numCol = so.getWorldDimension().width / so.getBlockSize();
+		numFilas = so.getWorldDimension().height / so.getBlockSize();
+		
+		mapaObstaculos = new char[numFilas][numCol];
+		
+		System.out.println("NUM FILAS = " + numFilas);
+		System.out.println("NUM COL = " + numCol);
+		
     }
 
 
@@ -51,8 +67,58 @@ public class Agent extends AbstractPlayer {
      * @return An action for the current state
      */
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
+    	mapaObstaculos = new char[numFilas][numCol];
+    	ArrayList<Observation>[][] mapa = stateObs.getObservationGrid();
     	
-	
+    	
+    	
+    	//13 -> TANQUE AZUL
+    	//14 -> COCHE VERDE
+    	//15 -> BIDÓN DE GASOLINA
+    	//10,16 -> ÁRBOLES
+    	//1 -> JUGADOR
+    	
+    	for(int i=0; i<numFilas; i++)
+    		for(int j=0; j<numCol; j++)
+    			for (Observation obs : mapa[j][i])
+    			{
+    				switch(obs.itype)
+    				{    					
+    					case 1:
+    						mapaObstaculos[i][j] = 'O';
+    						break;
+    					case 10:
+    					case 16:
+    						mapaObstaculos[i][j] = '|';
+    						break;
+    					case 13:
+    					case 14:
+    						mapaObstaculos[i][j] = 'X';
+    						break;
+    					case 15:
+    						mapaObstaculos[i][j] = 'G';
+    						break; 
+
+						default:
+							mapaObstaculos[i][j] = ' ';
+    				}
+    				
+    			}
+    	
+    	for(int i=0; i<numFilas; i++) {
+    		System.out.println();
+    		for(int j=0; j<numCol; j++)
+    			System.out.print(mapaObstaculos[i][j]);
+    	}
+    	System.out.println();
+    	
+//    	try {
+//			Thread.sleep(500);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	
     	
       	
     	
@@ -69,5 +135,51 @@ public class Agent extends AbstractPlayer {
     }
     
     
+    
+//	/**
+//	 * Metodo que muestra el mapa del juego
+//	 * 
+//	 * @param stateObs
+//	 * @param posCol
+//	 * @param posFila
+//	 */
+//	private void mostrarObstaculos(int posFila, int posCol) {
+//		// Mostrar numeros de columnas
+//		System.out.print("  ");
+//		for (int c = 0; c < numCol; c++) {
+//			if (c < 10)
+//				System.out.print(" " + c + " ");
+//			else
+//				System.out.print(c + " ");
+//		}
+//		System.out.println();
+//
+//		// MOSTRAR GRID DE OBSTACULOS PARSEADOS
+//		for (int i = 0; i < numFilas; i++) {
+//			if (i < 10)
+//				System.out.print(i + " ");
+//			else
+//				System.out.print(i);
+//
+//			for (int j = 0; j < numCol; j++) {
+//				if (posFila == i && posCol == j) {
+//					System.out.print(" O ");
+//				} else if (verObstaculos[i][j] == 1) {
+//					System.out.print(" X ");
+//				} else if (verObstaculos[i][j] == 2) {
+//					System.out.print(" P ");
+//				} else if (verObstaculos[i][j] == 3) {
+//					System.out.print(" A ");
+//				} else if (verObstaculos[i][j] == 4) {
+//					System.out.print(" - ");
+//				} else {
+//					System.out.print("   ");
+//				}
+//			}
+//			System.out.println();
+//		}
+//		System.out.println();
+//	}
+//    
 
 }
