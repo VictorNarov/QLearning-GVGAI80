@@ -11,8 +11,9 @@ import core.player.AbstractPlayer;
 import ontology.Types;
 import ontology.Types.ACTIONS;
 import tools.ElapsedCpuTimer;
+import tools.Vector2d;
 
-public class Agent extends AbstractPlayer {
+public class TrainingAgent extends AbstractPlayer {
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
 	Dimension dim;
@@ -21,7 +22,12 @@ public class Agent extends AbstractPlayer {
 	private int numCol;
 	private int blockSize;
 	
+	private char[][] mapaBlank;
 	private char[][] mapaObstaculos;
+	
+	// VARIABLES Q LEARNING
+	ArrayList<String> 
+	
 	
     /**
      * Random generator for the agent.
@@ -39,7 +45,7 @@ public class Agent extends AbstractPlayer {
      * @param elapsedTimer Timer for the controller creation.
      * En el constructor mirar y guardar las cosas estaticas
      */
-    public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer)
+    public TrainingAgent(StateObservation so, ElapsedCpuTimer elapsedTimer)
     {
         randomGenerator = new Random();
         actions = so.getAvailableActions();
@@ -51,10 +57,19 @@ public class Agent extends AbstractPlayer {
 		numCol = so.getWorldDimension().width / so.getBlockSize();
 		numFilas = so.getWorldDimension().height / so.getBlockSize();
 		
+		mapaBlank = new char[numFilas][numCol];
 		mapaObstaculos = new char[numFilas][numCol];
+		
+		for(int i=0; i<numFilas; i++)
+			for(int j=0; j<numCol; j++)
+				mapaBlank[i][j] = ' ';
 		
 		System.out.println("NUM FILAS = " + numFilas);
 		System.out.println("NUM COL = " + numCol);
+		
+		// Inicializamos el modulo Util
+		Util.numCol = numCol;
+		Util.numFilas = numFilas;
 		
     }
 
@@ -67,43 +82,54 @@ public class Agent extends AbstractPlayer {
      * @return An action for the current state
      */
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
+    	System.out.println("COMBUSTIBLE > " + stateObs.getAvatarHealthPoints());
     	mapaObstaculos = new char[numFilas][numCol];
-    	ArrayList<Observation>[][] mapa = stateObs.getObservationGrid();
+    
+    	int[] posJugador = getCelda(stateObs.getAvatarPosition(),dim);
+    	mapaObstaculos[posJugador[0]][posJugador[1]] = 'O';
     	
+    	//ArrayList<Observation>[][] mapa = stateObs.getObservationGrid();
     	
+    	System.out.println("-----------------------------------");
+    	//System.out.println(mapa.length);
     	
-    	//13 -> TANQUE AZUL
-    	//14 -> COCHE VERDE
-    	//15 -> BIDÓN DE GASOLINA
+    	//13, 6 -> TANQUE AZUL
+    	//14, 7 -> COCHE VERDE
+    	//15, 9 -> BIDÓN DE GASOLINA
     	//10,16 -> ÁRBOLES
     	//1 -> JUGADOR
-    	
-    	for(int i=0; i<numFilas; i++)
-    		for(int j=0; j<numCol; j++)
-    			for (Observation obs : mapa[j][i])
-    			{
-    				switch(obs.itype)
-    				{    					
-    					case 1:
-    						mapaObstaculos[i][j] = 'O';
-    						break;
-    					case 10:
-    					case 16:
-    						mapaObstaculos[i][j] = '|';
-    						break;
-    					case 13:
-    					case 14:
-    						mapaObstaculos[i][j] = 'X';
-    						break;
-    					case 15:
-    						mapaObstaculos[i][j] = 'G';
-    						break; 
+    	for(ArrayList<Observation> lista : stateObs.getMovablePositions())
+    		for(Observation ob : lista)
+    		{
+    			int[] pos = getCelda(ob, dim);
+    			//System.out.println(pos[0] + "," + pos[1]+" -> "+ob.itype);
+    			
+    			switch(ob.itype)
+				{    					
+					case 1:
+						mapaObstaculos[pos[0]][pos[1]] = 'O';
+						break;
+					case 10:
+					case 16:
+						mapaObstaculos[pos[0]][pos[1]] = '|';
+						break;
+					case 6:
+					case 7:
+					case 13:
+					case 14:
+						mapaObstaculos[pos[0]][pos[1]] = 'X';
+						break;
+					case 9:
+					case 15:
+						mapaObstaculos[pos[0]][pos[1]] = 'G';
+						break; 
 
-						default:
-							mapaObstaculos[i][j] = ' ';
-    				}
-    				
-    			}
+					default:
+						mapaObstaculos[pos[0]][pos[1]] = ' ';
+    			
+    		}
+		}
+    		
     	
     	for(int i=0; i<numFilas; i++) {
     		System.out.println();
@@ -123,18 +149,26 @@ public class Agent extends AbstractPlayer {
       	
     	
         
-        return ACTIONS.ACTION_DOWN;
+        return ACTIONS.ACTION_RIGHT;
     }
     
-    private String getCelda(Observation ob, Dimension dim)
-    {
-    	double x = (int) ob.position.x /  dim.getWidth();
-    	double y = (int) ob.position.y /  dim.getHeight();
+    private int[] getCelda(Vector2d vector, Dimension dim2) {
+    	int x = (int) Math.floor(vector.x /  dim.getWidth() * numCol);
+    	int y = (int) Math.floor(vector.y /  dim.getHeight() * numFilas);
     	
-    	return x + "-" +y;
+    	return new int[] {y,x};
+	}
+
+
+	private int[] getCelda(Observation ob, Dimension dim)
+    {
+    	int x = (int) Math.floor(ob.position.x /  dim.getWidth() * numCol);
+    	int y = (int) Math.floor(ob.position.y /  dim.getHeight() * numFilas);
+    	
+    	return new int[] {y,x};
     }
     
-    
+} 
     
 //	/**
 //	 * Metodo que muestra el mapa del juego
@@ -182,4 +216,3 @@ public class Agent extends AbstractPlayer {
 //	}
 //    
 
-}
