@@ -1,128 +1,152 @@
 package qlearning;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Random;
 
 import core.game.Observation;
 import core.game.StateObservation;
+import ontology.Types.ACTIONS;
 import qlearning.Util;
-public class StateManager {
-	
-	//VARIABLES
-	private ArrayList<String> estados;
-	private char mapaObstaculos[][];
-	private StateObservation obs;
-	private int posActual[];
-	private int numFilas = Util.numFilas;
-	private int numCol = Util.numCol;
 
+
+
+public class StateManager {
+	static boolean verbose = true;
+	Random randomGenerator;
+	
+	// Contenedor de constantes para identificar los estados
+	public static enum ESTADOS{
+		OBTENGO_GASOLINA,
+		ESQUIVO_OBSTACULO,
+		MUERTE_SEGURA,
+		GASOLINA_ARRIBA,
+		GASOLINA_ABAJO,
+		GASOLINA_IZQDA,
+		GASOLINA_DCHA,
+		HUECO_ARRIBA,
+		HUECO_ABAJO,
+		HUECO_IZQDA,
+		HUECO_DCHA,
+		OBSTACULO_ARRIBA,
+		NIL
+	}
+	
+	public static HashMap<ParEstadoAccion, Integer> R; // TABLA R
+	public static HashMap<ParEstadoAccion, Double> Q; // TABLA Q
+		
+	//VARIABLES
+	private static char mapaObstaculos[][];
+	private StateObservation obs;
+	private static int posActual[];
+
+	
+	private int numEstados = ESTADOS.values().length;
+	private int numAcciones = ACTIONS.values().length;
 	
 	public StateManager()
 	{
+		if(verbose) System.out.println("Inicializando tablas Q y R.....");
 		
-		// CREA LOS ESTADOS
-		estados = new ArrayList<String>();
+		randomGenerator = new Random();
+		inicializaTablaR();
+		inicializaTablaQ(true);
 		
-		//ESTADOS CON RECOMPENSA
-		estados.add("+GASOLINA");			// 0 
-		estados.add("ESQUIVO OBSTACULOS");	// 1
-				
-		//ESTADOS CON CASTIGO
-		estados.add("MUERTE SEGURA");		// 2
-		
-		//RESTO DE ESTADOS
-		estados.add("GASOLINA ARRIBA");
-		estados.add("GASOLINA IZQDA");   	
-		estados.add("GASOLINA DCHA");
-		estados.add("GASOLINA ABAJO");
-		
-		
-		estados.add("HUECO IZQDA");
-		estados.add("HUECO DCHA");
-		estados.add("HUECO ARRIBA");
-		
-	
+
 	}
 	
-	private String getEstado(StateObservation obs, int vidaAnterior)
+	private void inicializaTablaR()
+	{
+		R = new HashMap<ParEstadoAccion, Integer>(numEstados*numAcciones);
+		
+		// Inicializamos todas las recompensas a cero
+		// excepto a obtener gasolina y esquivar obstaculos, que serán premiadas
+		for (ESTADOS estado: ESTADOS.values()) 
+			for(ACTIONS accion : ACTIONS.values())
+			{
+				int valorR = 0;
+				
+				if(estado.equals(ESTADOS.OBTENGO_GASOLINA))
+					valorR = 100;
+				
+				else if(estado.equals(ESTADOS.ESQUIVO_OBSTACULO))
+					valorR = 75;
+				
+				R.put(new ParEstadoAccion(estado,accion), valorR);
+			}
+		
+	}
+	
+	private void inicializaTablaQ(boolean random)
+	{
+		Q = new HashMap<ParEstadoAccion, Double>(numEstados*numAcciones);
+		
+		if(random)
+			// Inicializamos todos los valores Q a random
+			for (ESTADOS estado: ESTADOS.values()) 
+				for(ACTIONS accion : ACTIONS.values())			
+					Q.put(new ParEstadoAccion(estado,accion), randomGenerator.nextDouble() * 100);
+			else
+			// Inicializamos todos los valores Q a cero
+				for (ESTADOS estado: ESTADOS.values()) 
+					for(ACTIONS accion : ACTIONS.values())
+				
+						Q.put(new ParEstadoAccion(estado,accion), 0.0);
+				
+		if(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO, ACTIONS.ACTION_DOWN).equals(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO, ACTIONS.ACTION_DOWN)))
+			if (verbose) System.out.println("tremendo hashhhhhhhhhhhh");
+	}
+	
+	public static ESTADOS getEstado(StateObservation obs, int vidaAnterior)
 	{
 		int vidaActual = obs.getAvatarHealthPoints();
 		posActual = Util.getCelda(obs.getAvatarPosition(), obs.getWorldDimension());
 		
-		mapaObstaculos = getMapaObstaculos();
+		if (verbose) System.out.println("POS ACTUAL = " + posActual[0]+"-"+posActual[1]);
 		
-		if(vidaActual > vidaAnterior)
-			return "+GASOLINA";// "+GASOLINA"
-		
-		String posGasolina = getGasolina();
-		if(!posGasolina.equals("NO HAY")) // SI HAY GASOLINA
-			return posGasolina;
-		
-		int[] numObstaculosFila = getObstaculosFila();
-		int numObstaculosIzqda = numObstaculosFila[0];
-		int numObstaculosDcha = numObstaculosFila[1];
-		
-		if(numObstaculosDcha >= 1 || numObstaculosIzqda >= 1)
-			return "ESQUIVO OBSTACULOS"; // ESQUIVO OBSTACULOS
+		if(posActual[0] != -1 && posActual[1] != -1) {
 		
 		
-		if(estoyRodeadoObstaculos())
-			return "MUERTE SEGURA"; // "MUERTE SEGURA"
+			mapaObstaculos = Util.getMapaObstaculos(obs);
+			
+			if(vidaActual > vidaAnterior)
+				return ESTADOS.OBTENGO_GASOLINA;// "+GASOLINA"
+			
+			int[] posGasolina = getPosGasolina();
+			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
+			
+			if(posGasolina[0] != -1 && posGasolina[1] != -1) // SI HAY GASOLINA
+				return getEstadoGasolina(posGasolina); // Obtiene el estado en funcion de la posicion de la gasolina
+			
+			int[] numObstaculosFila = getObstaculosFila();
+			int numObstaculosIzqda = numObstaculosFila[0];
+			int numObstaculosDcha = numObstaculosFila[1];
+			
+			if (verbose) System.out.println("N obstaculos izqda = " + numObstaculosIzqda);
+			if (verbose) System.out.println("N obstaculos dcha = " + numObstaculosDcha);
+			
+			if(numObstaculosDcha >= 1 || numObstaculosIzqda >= 1)
+				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
+			
+			if(mapaObstaculos[posActual[0]-1][posActual[1]] == ' ')
+				return ESTADOS.OBSTACULO_ARRIBA;
+			
+			if(estoyRodeadoObstaculos())
+				return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
+			
+		}
 		
-		
-
-		
-		return null;
+		return ESTADOS.NIL;
 		
 	}
 	
-	//13, 6 -> TANQUE AZUL
-	//14, 7 -> COCHE VERDE
-	//15, 9 -> BIDÓN DE GASOLINA
-	//10,16 -> ÁRBOLES
-	//1 -> JUGADOR
-	private char[][] getMapaObstaculos()
-	{
-		mapaObstaculos = new char[numFilas][numCol];
-		
 
-    	for(ArrayList<Observation> lista : obs.getMovablePositions())
-    		for(Observation objeto : lista)
-    		{
-    			//System.out.println(pos[0] + "," + pos[1]+" -> "+ob.itype);
-    			int[] pos = Util.getCelda(objeto.position, obs.getWorldDimension());
-    			
-    			switch(objeto.itype)
-				{    					
-					case 1:
-						mapaObstaculos[pos[0]][pos[1]] = 'O';
-						break;
-					case 10:
-					case 16:
-						mapaObstaculos[pos[0]][pos[1]] = '|';
-						break;
-					case 6:
-					case 7:
-					case 13:
-					case 14:
-						mapaObstaculos[pos[0]][pos[1]] = 'X';
-						break;
-					case 9:
-					case 15:
-						mapaObstaculos[pos[0]][pos[1]] = 'G';
-						break; 
-
-					default:
-						mapaObstaculos[pos[0]][pos[1]] = ' ';		
-    		}
-		}
-    	
-    	return mapaObstaculos;
-	}
 	
 	/*
 	 * Devuelve un array de dos enteros indicando el numero de obstaculos a la izqda y a la derecha del agente
 	 */
-	private int[] getObstaculosFila()
+	private static int[] getObstaculosFila()
 	{
 		int numCol = Util.numCol;
 		int numObstaculosDcha = 0;
@@ -130,8 +154,9 @@ public class StateManager {
 		
 				
 		//Desde la casilla a la derecha hasta el arbol de la derecha
-		for (int i = posActual[1]+1; i < numCol-1; i++) {
+		for (int i = posActual[1]+1; i < numCol -1; i++) {
 			// Si en la fila actual, columna i tenemos un obstaculo
+			//if (verbose) System.out.println("mirando casilla derecha: " + posActual[0]+"-"+i);
 			if(mapaObstaculos[posActual[0]][i] == 'X')
 				numObstaculosDcha++; //Incrementamos el contador
 		}
@@ -148,55 +173,62 @@ public class StateManager {
 		
 	}
 	
-	private boolean estoyRodeadoObstaculos()
+	private static boolean estoyRodeadoObstaculos()
 	{
 		// X X X ||   X 
 		//   O   || X O X
 				
-		return(mapaObstaculos[posActual[0]+1][posActual[1]]=='X' 
-				&& ( (mapaObstaculos[posActual[0]+1][posActual[1]+1]=='X'
-					&& mapaObstaculos[posActual[0]+1][posActual[1]-1]=='X')
-				|| (mapaObstaculos[posActual[0]][posActual[1]+1]=='X'
+		return(mapaObstaculos[posActual[0]-1][posActual[1]]=='X' 
+				&& ( (mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X'
+					&& mapaObstaculos[posActual[0]-1][posActual[1]-1]=='X')
+				|| (mapaObstaculos[posActual[0]][posActual[1]-1]=='X'
 						&& mapaObstaculos[posActual[0]][posActual[1]-1]=='X') )
 				);
 	}
 	
-	private String getGasolina()
+	private static int[] getPosGasolina()
 	{
 		int posGasolina[] = new int[] {-1,-1};
 		boolean encontrado = false;
 		
 		// Recorremos el mapa para buscar la pos de la gasolina
 		while(!encontrado) {
-			for(int i=0; i<numFilas; i++)
-				for (int j = 1; j < numCol-1; j++)  //Quitando los arboles del borde
+			for(int i=0; i< Util.numFilas; i++)
+				for (int j = 1; j < Util.numCol-1; j++)  //Quitando los arboles del borde
 					if(mapaObstaculos[i][j] == 'G') {
 						posGasolina = new int[]{i,j};
 						encontrado = true;
 					}
 			break;
 		}
+		
+		return posGasolina;
+	}
 	
-		if(posGasolina[0] == -1 && posGasolina[1] == -1)
-			return "NO HAY";  // La gasolina no ha aparecido
+	private static ESTADOS getEstadoGasolina(int [] posGasolina)
+	{
 		
 		//Misma columna y gasolina por encima
-		else if(posGasolina[1] == posActual[1] && posGasolina[0] >= posActual[0]) 
-			return "GASOLINA ARRIBA"; 
+		if(posGasolina[1] == posActual[1] && posGasolina[0] >= posActual[0]) 
+			return ESTADOS.GASOLINA_ARRIBA; 
 		
 		//Gasolina a la derecha
 		else if(posGasolina[1] > posActual[1])
-			return "GASOLINA DCHA";
+			return ESTADOS.GASOLINA_DCHA;
 		
 		//Gasolina a la izqda
 		else if(posGasolina[1] < posActual[1])
-			return "GASOLINA IZQDA";
+			return ESTADOS.GASOLINA_IZQDA;
 		
 		//Gasolina abajo
 		else if(posGasolina[0] > posActual[0])
-			return "GASOLINA ABAJO";	
+			return ESTADOS.GASOLINA_ABAJO;	
 		
-		return null;
+		return ESTADOS.NIL;
 		
 	}
+	
+	 
 }
+
+

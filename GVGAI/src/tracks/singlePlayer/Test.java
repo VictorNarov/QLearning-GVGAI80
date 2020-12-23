@@ -3,6 +3,7 @@ package tracks.singlePlayer;
 import java.util.Random;
 
 import core.logging.Logger;
+import qlearning.StateManager;
 import tools.Utils;
 import tracks.ArcadeMachine;
 
@@ -25,7 +26,7 @@ public class Test {
 //        String sampleRHEAController = "tracks.singlePlayer.advanced.sampleRHEA.Agent";
 //		String sampleOLETSController = "tracks.singlePlayer.advanced.olets.Agent";
     	
-    	String QLearning = "qlearning.Agent";
+    	String QLearning = "qlearning.TrainingAgent";
 
 
 		//Load available games
@@ -49,7 +50,7 @@ public class Test {
 						// executed. null if not to save.
 
 		// 1. This starts a game, in a level, played by a human.
-		ArcadeMachine.playOneGame(game, level1, recordActionsFile, 234234234);
+//		ArcadeMachine.playOneGame(game, level1, recordActionsFile, 234234234);
 
 		// 2. This plays a game in a level by the controller.
 //		ArcadeMachine.runOneGame(game, level1, visuals, QLearning, recordActionsFile, seed, 0);
@@ -61,12 +62,16 @@ public class Test {
 
 		// 4. This plays a single game, in N levels, M times :
 //		String level2 = new String(game).replace(gameName, gameName + "_lvl" + 1);
-//		int M = 10;
+		
+		StateManager stateManager = new StateManager();
+		int M = 1000;
+		ArcadeMachine.runGames(game, new String[]{level1}, M, QLearning, null);
+		
 //		for(int i=0; i<games.length; i++){
 //			game = games[i][0];
 //			gameName = games[i][1];
 //			level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
-//			ArcadeMachine.runGames(game, new String[]{level1}, M, sampleMCTSController, null);
+//			ArcadeMachine.runGames(game, new String[]{level1}, M, QLearning, null);
 //		}
 
 		//5. This plays N games, in the first L levels, M times each. Actions to file optional (set saveActions to true).
