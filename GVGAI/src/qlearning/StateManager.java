@@ -1,23 +1,17 @@
 package qlearning;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
-
-import core.game.Observation;
 import core.game.StateObservation;
 import ontology.Types.ACTIONS;
 import qlearning.Util;
-
-
 
 public class StateManager {
 	static boolean verbose = true;
 	Random randomGenerator;
 	
 	// Contenedor de constantes para identificar los estados
-	public static enum ESTADOS{
+	public static enum ESTADOS {
 		OBTENGO_GASOLINA,
 		ESQUIVO_OBSTACULO,
 		MUERTE_SEGURA,
@@ -38,22 +32,18 @@ public class StateManager {
 		
 	//VARIABLES
 	private static char mapaObstaculos[][];
-	private StateObservation obs;
 	private static int posActual[];
-
-	
 	private int numEstados = ESTADOS.values().length;
 	private int numAcciones = ACTIONS.values().length;
 	
 	public StateManager()
 	{
-		if(verbose) System.out.println("Inicializando tablas Q y R.....");
+		if(verbose)
+			System.out.println("Inicializando tablas Q y R.....");
 		
 		randomGenerator = new Random();
 		inicializaTablaR();
 		inicializaTablaQ(true);
-		
-
 	}
 	
 	private void inicializaTablaR()
@@ -61,7 +51,8 @@ public class StateManager {
 		R = new HashMap<ParEstadoAccion, Integer>(numEstados*numAcciones);
 		
 		// Inicializamos todas las recompensas a cero
-		// excepto a obtener gasolina y esquivar obstaculos, que serán premiadas
+		// excepto la de obtener gasolina y esquivar obstaculos, que serán premiadas
+		
 		for (ESTADOS estado: ESTADOS.values()) 
 			for(ACTIONS accion : ACTIONS.values())
 			{
@@ -73,29 +64,52 @@ public class StateManager {
 				else if(estado.equals(ESTADOS.ESQUIVO_OBSTACULO))
 					valorR = 75;
 				
+				/* 
+				 En nuestro caso, recompensamos más que vaya a coger gasolina,
+				 puesto que no sirve de nada que esquive si se queda sin gasolina.
+				 */
+				
 				R.put(new ParEstadoAccion(estado,accion), valorR);
 			}
 		
 	}
 	
+	/*
+	 * Inializamos la TablaQ
+	 */
 	private void inicializaTablaQ(boolean random)
 	{
 		Q = new HashMap<ParEstadoAccion, Double>(numEstados*numAcciones);
 		
-		if(random)
-			// Inicializamos todos los valores Q a random
+		if(random) {
+			/* Inicializamos todos los valores Q a random */
 			for (ESTADOS estado: ESTADOS.values()) 
 				for(ACTIONS accion : ACTIONS.values())			
 					Q.put(new ParEstadoAccion(estado,accion), randomGenerator.nextDouble() * 100);
-			else
-			// Inicializamos todos los valores Q a cero
-				for (ESTADOS estado: ESTADOS.values()) 
-					for(ACTIONS accion : ACTIONS.values())
-				
-						Q.put(new ParEstadoAccion(estado,accion), 0.0);
+		}
+		else {
+			/* Inicializamos todos los valores Q a cero */
+			for (ESTADOS estado: ESTADOS.values()) 
+				for(ACTIONS accion : ACTIONS.values())
+					Q.put(new ParEstadoAccion(estado,accion), 0.0);
+		}
 				
 		if(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO, ACTIONS.ACTION_DOWN).equals(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO, ACTIONS.ACTION_DOWN)))
-			if (verbose) System.out.println("tremendo hashhhhhhhhhhhh");
+			if (verbose) System.out.println("tremendo hashhhhhhhhhhhh"); // ??
+	}
+	
+	/*
+	 * Devuelve todos los estados
+	 */
+	public static ESTADOS[] getEstados() {
+		return ESTADOS.values();
+	}
+	
+	/*
+	 * Devuelve todas las acciones
+	 */
+	public static ACTIONS[] getAcciones() {
+		return ACTIONS.values();
 	}
 	
 	public static ESTADOS getEstado(StateObservation obs, int vidaAnterior)
@@ -138,10 +152,7 @@ public class StateManager {
 		}
 		
 		return ESTADOS.NIL;
-		
 	}
-	
-
 	
 	/*
 	 * Devuelve un array de dos enteros indicando el numero de obstaculos a la izqda y a la derecha del agente
@@ -177,13 +188,24 @@ public class StateManager {
 	{
 		// X X X ||   X 
 		//   O   || X O X
-				
+		
+		/*boolean cond1, cond2, cond3, cond4, cond5;
+		
+		cond1 = mapaObstaculos[posActual[0]-1][posActual[1]]=='X';
+		cond2 = mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X';
+		cond3 = mapaObstaculos[posActual[0]-1][posActual[1]-1]=='X';
+		cond4 = mapaObstaculos[posActual[0]][posActual[1]-1]=='X';
+		cond5 = mapaObstaculos[posActual[0]][posActual[1]-1]=='X';
+		
+		return(cond1 && ( (cond2 && cond3) || (cond4 && cond5) ));*/
+		
 		return(mapaObstaculos[posActual[0]-1][posActual[1]]=='X' 
 				&& ( (mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X'
 					&& mapaObstaculos[posActual[0]-1][posActual[1]-1]=='X')
 				|| (mapaObstaculos[posActual[0]][posActual[1]-1]=='X'
 						&& mapaObstaculos[posActual[0]][posActual[1]-1]=='X') )
 				);
+		
 	}
 	
 	private static int[] getPosGasolina()
@@ -192,7 +214,20 @@ public class StateManager {
 		boolean encontrado = false;
 		
 		// Recorremos el mapa para buscar la pos de la gasolina
-		while(!encontrado) {
+		int i=0, j=1;
+		while( i < Util.numFilas && !encontrado ) {
+			while( j < Util.numCol-1 && !encontrado ) {
+				if( mapaObstaculos[i][j] == 'G' ) {
+					posGasolina = new int[] {i,j};
+					encontrado = true;
+				} else
+					j++;
+			}
+			i++;
+		}
+		
+		
+		/*while(!encontrado) {
 			for(int i=0; i< Util.numFilas; i++)
 				for (int j = 1; j < Util.numCol-1; j++)  //Quitando los arboles del borde
 					if(mapaObstaculos[i][j] == 'G') {
@@ -200,7 +235,7 @@ public class StateManager {
 						encontrado = true;
 					}
 			break;
-		}
+		}*/
 		
 		return posGasolina;
 	}
@@ -208,27 +243,22 @@ public class StateManager {
 	private static ESTADOS getEstadoGasolina(int [] posGasolina)
 	{
 		
-		//Misma columna y gasolina por encima
+		/* Misma columna y gasolina por encima */
 		if(posGasolina[1] == posActual[1] && posGasolina[0] >= posActual[0]) 
 			return ESTADOS.GASOLINA_ARRIBA; 
 		
-		//Gasolina a la derecha
+		/* Gasolina a la derecha */
 		else if(posGasolina[1] > posActual[1])
 			return ESTADOS.GASOLINA_DCHA;
 		
-		//Gasolina a la izqda
+		/* Gasolina a la izqda */
 		else if(posGasolina[1] < posActual[1])
 			return ESTADOS.GASOLINA_IZQDA;
 		
-		//Gasolina abajo
+		/* Gasolina abajo */
 		else if(posGasolina[0] > posActual[0])
 			return ESTADOS.GASOLINA_ABAJO;	
 		
 		return ESTADOS.NIL;
-		
 	}
-	
-	 
 }
-
-

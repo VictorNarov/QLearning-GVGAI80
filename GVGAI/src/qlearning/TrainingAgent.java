@@ -2,9 +2,14 @@ package qlearning;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 
 import core.game.Observation;
@@ -25,7 +30,6 @@ public class TrainingAgent extends AbstractPlayer {
 	private double alpha = 0.2; // Factor Explotacion
 	private double gamma = 0.8; // Factor Exlporacion
 	
-	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
 	Dimension dim;
@@ -39,8 +43,6 @@ public class TrainingAgent extends AbstractPlayer {
 	
 	// VARIABLES Q LEARNING
 	private int vidaAnterior;
-
-
 	
 	int numAccionesPosibles;
 	
@@ -89,8 +91,6 @@ public class TrainingAgent extends AbstractPlayer {
 		
 		vidaAnterior = so.getAvatarHealthPoints();
     	numAccionesPosibles = so.getAvailableActions().size();
-		
-		
     }
 
 
@@ -191,10 +191,6 @@ public class TrainingAgent extends AbstractPlayer {
     	return new int[] {y,x};
     }
 	
-	
-    
-
-	
 	/**
 	 * Lee el fichero que contiene la tabla Q (QTable.csv)
 	 * Vuelca el fichero en un diccionario de pares Estado-Accion N x M
@@ -205,9 +201,7 @@ public class TrainingAgent extends AbstractPlayer {
 	{
 		HashMap <ParEstadoAccion, Double> Q = new HashMap <ParEstadoAccion, Double>();
 		
-		Q.put(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO,ACTIONS.ACTION_DOWN), 0.0);
-		
-
+		//Q.put(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO,ACTIONS.ACTION_DOWN), 0.0);
 		
 		// leer el fichero..........
 		
@@ -221,7 +215,50 @@ public class TrainingAgent extends AbstractPlayer {
 	 */
 	private void saveQTable(HashMap<ParEstadoAccion, Double> Q) 
 	{
-		
+		/* Creación del fichero de salida */
+	    try (PrintWriter csvFile = new PrintWriter(new File("TablaQ.csv"))) {
+	    	ESTADOS[] estados = StateManager.getEstados();
+			ACTIONS[] actions = ACTIONS.values();
+			
+			if( verbose ) System.out.println(" GENERANDO EL FICHERO DE LA TABLAQ... ");
+			
+			StringBuilder buffer = new StringBuilder();
+			buffer.append("ESTADOS");
+			buffer.append(";");
+			
+			for( ACTIONS accion : ACTIONS.values() ) {
+				buffer.append( accion.toString() );
+				buffer.append(";");
+			}
+			
+			buffer.append("\n");
+			
+			for ( ESTADOS estado: ESTADOS.values() ) {
+				buffer.append(estado.toString());
+				buffer.append(";");
+
+				for( ACTIONS accion : ACTIONS.values() ) {
+					//buffer.append(accion.toString());
+					//buffer.append(";");
+					
+					double value = Q.get(new ParEstadoAccion(estado, accion));
+					
+					buffer.append( '"' + Double.toString(value).replace('.', ',') + '"');
+					buffer.append(";");
+					//buffer.append("\n");
+				}
+				buffer.append("\n");
+			}
+			
+			csvFile.write(buffer.toString());
+			
+			if ( verbose ) System.out.println( " FICHERO GENERADO CORRECTAMENTE! " );
+			
+			csvFile.close();
+			
+	    } catch( Exception ex ) {
+			System.out.println(ex.getMessage());
+		}
 	}
 	
 	
@@ -280,59 +317,57 @@ public class TrainingAgent extends AbstractPlayer {
 	        	if(verbose) System.out.print(actions[i]+"> = ");
 	        	double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
 	            if(verbose) System.out.println(value);
-	 
-
 	        }
-	     
+	        
+        this.saveQTable(StateManager.Q);
 	}
 	
 
 	
 } 
     
-//	/**
-//	 * Metodo que muestra el mapa del juego
-//	 * 
-//	 * @param stateObs
-//	 * @param posCol
-//	 * @param posFila
-//	 */
-//	private void mostrarObstaculos(int posFila, int posCol) {
-//		// Mostrar numeros de columnas
-//		if(verbose) System.out.print("  ");
-//		for (int c = 0; c < numCol; c++) {
-//			if (c < 10)
-//				if(verbose) System.out.print(" " + c + " ");
-//			else
-//				if(verbose) System.out.print(c + " ");
-//		}
-//		if(verbose) System.out.println();
-//
-//		// MOSTRAR GRID DE OBSTACULOS PARSEADOS
-//		for (int i = 0; i < numFilas; i++) {
-//			if (i < 10)
-//				if(verbose) System.out.print(i + " ");
-//			else
-//				if(verbose) System.out.print(i);
-//
-//			for (int j = 0; j < numCol; j++) {
-//				if (posFila == i && posCol == j) {
-//					if(verbose) System.out.print(" O ");
-//				} else if (verObstaculos[i][j] == 1) {
-//					if(verbose) System.out.print(" X ");
-//				} else if (verObstaculos[i][j] == 2) {
-//					if(verbose) System.out.print(" P ");
-//				} else if (verObstaculos[i][j] == 3) {
-//					if(verbose) System.out.print(" A ");
-//				} else if (verObstaculos[i][j] == 4) {
-//					if(verbose) System.out.print(" - ");
-//				} else {
-//					if(verbose) System.out.print("   ");
-//				}
-//			}
-//			if(verbose) System.out.println();
-//		}
-//		if(verbose) System.out.println();
-//	}
-//    
-
+/*
+ * Metodo que muestra el mapa del juego
+ * 
+ * @param stateObs
+ * @param posCol
+ * @param posFila
+ */
+/*	private void mostrarObstaculos(int posFila, int posCol) {
+		// Mostrar numeros de columnas
+		if(verbose) System.out.print("  ");
+		for (int c = 0; c < numCol; c++) {
+			if (c < 10)
+				if(verbose) System.out.print(" " + c + " ");
+			else
+				if(verbose) System.out.print(c + " ");
+		}
+		if(verbose) System.out.println();
+	
+		// MOSTRAR GRID DE OBSTACULOS PARSEADOS
+		for (int i = 0; i < numFilas; i++) {
+			if (i < 10)
+				if(verbose) System.out.print(i + " ");
+			else
+				if(verbose) System.out.print(i);
+	
+			for (int j = 0; j < numCol; j++) {
+				if (posFila == i && posCol == j) {
+					if(verbose) System.out.print(" O ");
+				} else if (verObstaculos[i][j] == 1) {
+					if(verbose) System.out.print(" X ");
+				} else if (verObstaculos[i][j] == 2) {
+					if(verbose) System.out.print(" P ");
+				} else if (verObstaculos[i][j] == 3) {
+					if(verbose) System.out.print(" A ");
+				} else if (verObstaculos[i][j] == 4) {
+					if(verbose) System.out.print(" - ");
+				} else {
+					if(verbose) System.out.print("   ");
+				}
+			}
+			if(verbose) System.out.println();
+		}
+		if(verbose) System.out.println();
+	}
+*/

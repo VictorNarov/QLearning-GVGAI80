@@ -55,17 +55,22 @@ public class QLearning {
  
     String[] stateNames = new String[] { "A", "B", "C", "D", "E", "F" };
 
+    /*
+     * Constructor
+     */
     public QLearning(double alpha, double gamma) {
     	this.alpha = alpha;
     	this.gamma = gamma;
         init();
     }
     
+    /*
+     * Constructor con parámetros por defecto.
+     */
     public QLearning() {
     	this(0.1, 0.9); //Parametros opcionales
     }
 
- 
     public void init() {        
         R[stateB][stateC] = 100; // from b to c
         R[stateF][stateC] = 100; // from f to c     
