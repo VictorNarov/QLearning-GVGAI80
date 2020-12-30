@@ -19,6 +19,13 @@ public class Util {
     	return new int[] {y,x};
 	}
 	
+	//mapaBlank = new char[numFilas][numCol];
+	//private static char[][] mapaObstaculos = new char[numFilas][numCol];
+	
+	//for(int i=0; i<numFilas; i++)
+	//	for(int j=0; j<numCol; j++)
+	//		mapaBlank[i][j] = ' ';
+	
 	//13, 6 -> TANQUE AZUL
 	//14, 7 -> COCHE VERDE
 	//15, 9 -> BIDÓN DE GASOLINA
@@ -27,6 +34,10 @@ public class Util {
 	public static char[][] getMapaObstaculos(StateObservation obs)
 	{
 		char[][] mapaObstaculos = new char[numFilas][numCol];
+		for(int i=0; i<numFilas; i++)
+			for(int j=0; j<numCol; j++)
+				mapaObstaculos[i][j] = ' ';
+		
 		
 	    	for(ArrayList<Observation> lista : obs.getMovablePositions())
 	    		for(Observation objeto : lista)
@@ -56,9 +67,9 @@ public class Util {
 						case 15:
 							mapaObstaculos[pos[0]][pos[1]] = 'G';
 							break; 
-	
 						default:
-							mapaObstaculos[pos[0]][pos[1]] = ' ';		
+							mapaObstaculos[pos[0]][pos[1]] = '.';
+							break;
 	    		}
 			}
     	

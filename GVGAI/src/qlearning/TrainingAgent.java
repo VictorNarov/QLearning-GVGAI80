@@ -38,7 +38,7 @@ public class TrainingAgent extends AbstractPlayer {
 	private int numCol;
 	private int blockSize;
 	
-	private char[][] mapaBlank;
+	//private char[][] mapaBlank;
 	private char[][] mapaObstaculos;
 	
 	// VARIABLES Q LEARNING
@@ -75,12 +75,12 @@ public class TrainingAgent extends AbstractPlayer {
 		numCol = so.getWorldDimension().width / so.getBlockSize();
 		numFilas = so.getWorldDimension().height / so.getBlockSize();
 		
-		mapaBlank = new char[numFilas][numCol];
+		//mapaBlank = new char[numFilas][numCol];
 		mapaObstaculos = new char[numFilas][numCol];
 		
-		for(int i=0; i<numFilas; i++)
-			for(int j=0; j<numCol; j++)
-				mapaBlank[i][j] = ' ';
+		//for(int i=0; i<numFilas; i++)
+		//	for(int j=0; j<numCol; j++)
+		//		mapaBlank[i][j] = ' ';
 		
 		if(verbose) System.out.println("NUM FILAS = " + numFilas);
 		if(verbose) System.out.println("NUM COL = " + numCol);

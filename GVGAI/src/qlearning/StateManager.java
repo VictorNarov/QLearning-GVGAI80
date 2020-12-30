@@ -197,9 +197,10 @@ public class StateManager {
 				if(mapaObstaculos[posActual[0]][posActual[1]+1] == ' ')
 					return ESTADOS.HUECO_DCHA;
 			}
-				
-			if(mapaObstaculos[posActual[0]-1][posActual[1]] == 'X')
-				return ESTADOS.OBSTACULO_ARRIBA;
+			
+			if(posActual[0]-1 > Util.numFilas)	
+				if(mapaObstaculos[posActual[0]-1][posActual[1]] == 'X')
+					return ESTADOS.OBSTACULO_ARRIBA;
 			
 			if(numObstaculosDcha >= 1 && numObstaculosIzqda==0)
 				return ESTADOS.OBSTACULOS_DCHA;
