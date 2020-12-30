@@ -64,9 +64,12 @@ public class Test {
 //		String level2 = new String(game).replace(gameName, gameName + "_lvl" + 1);
 		
 		StateManager stateManager = new StateManager();
-		int M = 1000;
+		int M = 100;
 		ArcadeMachine.runGames(game, new String[]{level1}, M, QLearning, null);
 		
+		System.out.println("____________ CONTADORES ESTADOS _____________");
+		stateManager.getContadoresEstados();
+				
 //		for(int i=0; i<games.length; i++){
 //			game = games[i][0];
 //			gameName = games[i][1];

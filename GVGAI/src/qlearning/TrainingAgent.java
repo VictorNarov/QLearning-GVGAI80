@@ -115,11 +115,10 @@ public class TrainingAgent extends AbstractPlayer {
     	mapaObstaculos[posJugador[0]][posJugador[1]] = 'O'; //Marcamos la posicion del jugador
 
     	Util.pintaMapaObstaculos(mapaObstaculos);
-    
     	
-    	
-    	
+    	// Percibimos el estado actual e incrementamos su contador
     	ESTADOS estadoActual = StateManager.getEstado(stateObs, vidaAnterior);
+    	estadoActual.incrementa();
     	if(verbose) System.out.println("Estado actual: " + estadoActual.toString());
     	
     	// -----------------------------------------------------------------------

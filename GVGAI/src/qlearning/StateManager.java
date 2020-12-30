@@ -12,19 +12,31 @@ public class StateManager {
 	
 	/* Contenedor de constantes para identificar los estados */
 	public static enum ESTADOS {
-		OBTENGO_GASOLINA,
-		ESQUIVO_OBSTACULO,
-		MUERTE_SEGURA,
-		GASOLINA_ARRIBA,
-		GASOLINA_ABAJO,
-		GASOLINA_IZQDA,
-		GASOLINA_DCHA,
-		HUECO_ARRIBA,
-		HUECO_ABAJO,
-		HUECO_IZQDA,
-		HUECO_DCHA,
-		OBSTACULO_ARRIBA,
-		NIL
+		OBTENGO_GASOLINA(0),
+		ESQUIVO_OBSTACULO(0),
+		MUERTE_SEGURA(0),
+		GASOLINA_ARRIBA(0),
+		GASOLINA_ABAJO(0),
+		GASOLINA_IZQDA(0),
+		GASOLINA_DCHA(0),
+		HUECO_ARRIBA(0),
+		HUECO_ABAJO(0),
+		HUECO_IZQDA(0),
+		HUECO_DCHA(0),
+		OBSTACULO_ARRIBA(0),
+		NIL(0);
+
+		private int contador; //Cuenta cada vez que se percibe ese estado
+		
+		ESTADOS(int c) { this.contador = c; }
+		
+		ESTADOS(){	this.contador = 0; }
+		
+		public void incrementa() { this.contador++; }
+		
+		public int getContador(){ return this.contador;}
+		
+		
 	}
 	
 	public static HashMap<ParEstadoAccion, Integer> R; // TABLA R
@@ -91,9 +103,7 @@ public class StateManager {
 				for(ACTIONS accion : ACTIONS.values())
 					Q.put(new ParEstadoAccion(estado,accion), 0.0);
 		}
-				
-		if(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO, ACTIONS.ACTION_DOWN).equals(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO, ACTIONS.ACTION_DOWN)))
-			if (verbose) System.out.println("tremendo hashhhhhhhhhhhh"); // ??
+						
 	}
 	
 	public static ESTADOS getEstado(StateObservation obs, int vidaAnterior)
@@ -246,5 +256,13 @@ public class StateManager {
 			return ESTADOS.GASOLINA_ABAJO;	
 		
 		return ESTADOS.NIL;
+	}
+	
+	public void getContadoresEstados()
+	{
+		for (ESTADOS s : getEstados()) {
+			
+			System.out.println(s.toString() + " : " + s.getContador());
+		}
 	}
 }
