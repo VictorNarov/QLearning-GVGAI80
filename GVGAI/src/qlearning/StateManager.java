@@ -1,13 +1,19 @@
 package qlearning;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Scanner;
+
 import core.game.StateObservation;
 import ontology.Types.ACTIONS;
 import qlearning.Util;
+import qlearning.StateManager.ESTADOS;
 
 public class StateManager {
-	static boolean verbose = true;
+	public static boolean verbose = true;
 	Random randomGenerator;
 	
 	/* Contenedor de constantes para identificar los estados */
@@ -36,8 +42,23 @@ public class StateManager {
 		
 		public int getContador(){ return this.contador;}
 		
-		
+		// Devuelve el enum ESTADOS al que se corresponde la cadena pasada por parametro
+		public static ESTADOS buscaEstado(String nombreEstado)
+		{
+			for(ESTADOS s : ESTADOS.values()) {
+				if(s.toString().equals(nombreEstado))
+					return s;
+					
+			}
+			
+			return null;
+			
+		}
 	}
+	
+	// Acciones posibles
+	public static final ACTIONS[] ACCIONES = {ACTIONS.ACTION_UP,ACTIONS.ACTION_DOWN, ACTIONS.ACTION_LEFT, ACTIONS.ACTION_RIGHT, ACTIONS.ACTION_NIL};
+	
 	
 	public static HashMap<ParEstadoAccion, Integer> R; // TABLA R
 	public static HashMap<ParEstadoAccion, Double> Q; // TABLA Q
@@ -46,7 +67,7 @@ public class StateManager {
 	private static char mapaObstaculos[][];
 	private static int posActual[];
 	private int numEstados = ESTADOS.values().length;
-	private int numAcciones = ACTIONS.values().length;
+	private int numAcciones = ACCIONES.length;
 	
 	public StateManager() {
 		if(verbose) System.out.println("Inicializando tablas Q y R.....");
@@ -54,6 +75,17 @@ public class StateManager {
 		randomGenerator = new Random();
 		inicializaTablaR();
 		inicializaTablaQ(true);
+	}
+	
+	public StateManager(String ficheroTablaQ)
+	{
+		if(verbose) System.out.println("Inicializando tablas Q y R.....");
+		
+		randomGenerator = new Random();
+		inicializaTablaR();
+		inicializaTablaQ(false);
+		cargaTablaQ(ficheroTablaQ);
+		
 	}
 	
 	private void inicializaTablaR()
@@ -64,7 +96,7 @@ public class StateManager {
 		// excepto la de obtener gasolina y esquivar obstaculos, que serán premiadas
 		
 		for (ESTADOS estado: ESTADOS.values()) 
-			for(ACTIONS accion : ACTIONS.values())
+			for(ACTIONS accion : ACCIONES)
 			{
 				int valorR = 0;
 				
@@ -94,13 +126,13 @@ public class StateManager {
 		if(random) {
 			/* Inicializamos todos los valores Q a random */
 			for (ESTADOS estado: ESTADOS.values()) 
-				for(ACTIONS accion : ACTIONS.values())			
+				for(ACTIONS accion : ACCIONES)			
 					Q.put(new ParEstadoAccion(estado,accion), randomGenerator.nextDouble() * 100);
 		}
 		else {
 			/* Inicializamos todos los valores Q a cero */
 			for (ESTADOS estado: ESTADOS.values()) 
-				for(ACTIONS accion : ACTIONS.values())
+				for(ACTIONS accion : ACCIONES)
 					Q.put(new ParEstadoAccion(estado,accion), 0.0);
 		}
 						
@@ -136,10 +168,10 @@ public class StateManager {
 			if(numObstaculosDcha >= 1 || numObstaculosIzqda >= 1)
 				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
 			
-			if(mapaObstaculos[posActual[0]-1][posActual[1]] == ' ')
+			if(mapaObstaculos[posActual[0]-1][posActual[1]] == 'X')
 				return ESTADOS.OBSTACULO_ARRIBA;
 			
-			if(estoyRodeadoObstaculos())
+			if(estoyRodeadoObstaculos() || obs.isGameOver())
 				return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
 			
 		}
@@ -210,28 +242,30 @@ public class StateManager {
 		boolean encontrado = false;
 		
 		// Recorremos el mapa para buscar la pos de la gasolina
-		int i=0, j=1;
-		while( i < Util.numFilas && !encontrado ) {
-			while( j < Util.numCol-1 && !encontrado ) {
-				if( mapaObstaculos[i][j] == 'G' ) {
-					posGasolina = new int[] {i,j};
-					encontrado = true;
-				} else
-					j++;
-			}
-			i++;
-		}
+		//int i=0, j=1;
+//		while( i < Util.numFilas && !encontrado ) {
+//			while( j < Util.numCol-1 && !encontrado ) {
+//				if( mapaObstaculos[i][j] == 'G' ) {
+//					posGasolina = new int[] {i,j};
+//					encontrado = true;
+//				} else
+//					j++;
+//			}
+//			i++;
+//		}
 		
 		
-		/*while(!encontrado) {
-			for(int i=0; i< Util.numFilas; i++)
+
+			for(int i=0; i< Util.numFilas; i++) {
 				for (int j = 1; j < Util.numCol-1; j++)  //Quitando los arboles del borde
 					if(mapaObstaculos[i][j] == 'G') {
 						posGasolina = new int[]{i,j};
 						encontrado = true;
+						break;
 					}
-			break;
-		}*/
+				if(encontrado) break;
+			}
+
 		
 		return posGasolina;
 	}
@@ -240,7 +274,7 @@ public class StateManager {
 	{
 		
 		/* Misma columna y gasolina por encima */
-		if(posGasolina[1] == posActual[1] && posGasolina[0] >= posActual[0]) 
+		if(posGasolina[1] == posActual[1] && posGasolina[0] <= posActual[0]) 
 			return ESTADOS.GASOLINA_ARRIBA; 
 		
 		/* Gasolina a la derecha */
@@ -260,9 +294,117 @@ public class StateManager {
 	
 	public void getContadoresEstados()
 	{
-		for (ESTADOS s : getEstados()) {
+		for (ESTADOS s : ESTADOS.values()) {
 			
 			System.out.println(s.toString() + " : " + s.getContador());
 		}
 	}
+	
+	/**
+	 * Si no le indicamos el nombre del fichero, usa uno por defecto.
+	 */
+	public void saveQTable() {
+		saveQTable("TablaQ.csv");
+	}
+	
+	/**
+	 * Escribe la tabla Q del atributo de la clase en 
+	 * el fichero QTable.csv, para poder ser leída en 
+	 * una siguiente etapa de aprendizaje.
+	 */
+	public void saveQTable(String fileName) 
+	{
+		/* Creación del fichero de salida */
+	    try (PrintWriter csvFile = new PrintWriter(new File(fileName))) {
+			
+			if( verbose ) System.out.println(" GENERANDO EL FICHERO DE LA TABLAQ... ");
+			
+			StringBuilder buffer = new StringBuilder();
+			buffer.append("ESTADOS");
+			buffer.append(";");
+			
+			for( ACTIONS accion : StateManager.ACCIONES ) {
+				buffer.append( accion.toString() );
+				buffer.append(";");
+			}
+			
+			buffer.append("\n");
+			
+			for ( ESTADOS estado: ESTADOS.values() ) {
+				buffer.append(estado.toString());
+				buffer.append(";");
+
+				for( ACTIONS accion : StateManager.ACCIONES ) {
+					double value = StateManager.Q.get(new ParEstadoAccion(estado, accion));
+					
+					buffer.append( '"' + Double.toString(value).replace('.', ',') + '"');
+					buffer.append(";");
+				}
+				
+				buffer.append("\n");
+			}
+			
+			csvFile.write(buffer.toString());
+			
+			if ( verbose ) System.out.println( " FICHERO GENERADO CORRECTAMENTE! " );
+			
+			csvFile.close();
+			
+	    } catch( Exception ex ) {
+	    	System.out.println(ex.getMessage());
+		}
+	}
+	
+	private void cargaTablaQ(String filename) {
+		
+		/* Creación del fichero de salida */
+	    try (Scanner fichero = new Scanner(new File(filename));){
+	    	
+			if( verbose ) System.out.println(" CARGANDO EL FICHERO DE LA TABLAQ: "+filename);
+			
+		
+	    	
+			String linea = fichero.nextLine();
+			String [] cabecera = linea.split(";");
+			
+			ACTIONS[] actions = new ACTIONS[cabecera.length];
+						
+			for(int i = 1; i<cabecera.length; i++)
+			{
+				for(ACTIONS a : ACCIONES)
+				{
+					if(verbose) System.out.println("NOMBRE ACCION: " + a.toString());
+					if(a.toString().equals(cabecera[i])) {
+						actions[i] = a;
+						if(verbose) System.out.println(actions[i] + " = " + a.toString());
+						break;
+					}
+				}
+			}
+			
+			while(fichero.hasNextLine())
+			{
+				linea = fichero.nextLine();
+				
+				String [] campos = linea.split(";");
+	
+				
+				//Según el estado
+				ESTADOS estado = ESTADOS.buscaEstado(campos[0]);
+				
+				
+				//Por cada celda, le metemos el valor Q reemplazando coma por punto
+				for(int i=1; i<campos.length; i++)
+					Q.put(new ParEstadoAccion(estado,actions[i]), Double.parseDouble(campos[i].replace(',', '.').replace('"', Character.MIN_VALUE)));
+					
+			}
+			
+			fichero.close();
+	
+	    } catch( Exception ex ) {
+	    	System.out.println(ex.getMessage());
+		}
+	}
+
+	
 }

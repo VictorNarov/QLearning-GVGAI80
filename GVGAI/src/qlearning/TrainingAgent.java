@@ -24,7 +24,7 @@ import tools.Vector2d;
 
 
 public class TrainingAgent extends AbstractPlayer {
-	boolean verbose = true;
+	boolean verbose = StateManager.verbose;
 	
 	//PARAMETROS DEL APRENDIZAJE
 	private double alpha = 0.2; // Factor Explotacion
@@ -64,6 +64,7 @@ public class TrainingAgent extends AbstractPlayer {
      */
     public TrainingAgent(StateObservation so, ElapsedCpuTimer elapsedTimer)
     {
+    	if(verbose) System.out.println("______________________\nCOMIENZA LA PARTIDA\n_______________________");
         randomGenerator = new Random();
         actions = so.getAvailableActions();
         inmov = so.getImmovablePositions();
@@ -90,7 +91,7 @@ public class TrainingAgent extends AbstractPlayer {
 
 		
 		vidaAnterior = so.getAvatarHealthPoints();
-    	numAccionesPosibles = so.getAvailableActions().size();
+    	numAccionesPosibles = StateManager.ACCIONES.length;
     }
 
 
@@ -102,7 +103,6 @@ public class TrainingAgent extends AbstractPlayer {
      * @return An action for the current state
      */
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
-    	
     	// -----------------------------------------------------------------------
     	// 01 - PERCEPCIÓN DEL ENTORNO
     	// -----------------------------------------------------------------------
@@ -114,7 +114,7 @@ public class TrainingAgent extends AbstractPlayer {
     	this.mapaObstaculos = Util.getMapaObstaculos(stateObs); //Actualizamos el mapa percibido
     	mapaObstaculos[posJugador[0]][posJugador[1]] = 'O'; //Marcamos la posicion del jugador
 
-    	Util.pintaMapaObstaculos(mapaObstaculos);
+    	if(verbose) Util.pintaMapaObstaculos(mapaObstaculos);
     	
     	// Percibimos el estado actual e incrementamos su contador
     	ESTADOS estadoActual = StateManager.getEstado(stateObs, vidaAnterior);
@@ -171,6 +171,8 @@ public class TrainingAgent extends AbstractPlayer {
 		
 		if(verbose) System.out.println("--> DECIDE HACER: " + action.toString());
 		
+	  	//if(stateObs.isGameOver()) this.saveQTable(); //Guardamos la tablaQ si termina el juego
+	  	
         return action;
     }
     
@@ -206,64 +208,10 @@ public class TrainingAgent extends AbstractPlayer {
 		
 		return Q;
 	}
-	/**
-	 * Si no le indicamos el nombre del fichero, usa uno por defecto.
-	 */
-	private void saveQTable() {
-		saveQTable("TablaQ.csv");
-	}
-	
-	/**
-	 * Escribe la tabla Q del atributo de la clase en 
-	 * el fichero QTable.csv, para poder ser leída en 
-	 * una siguiente etapa de aprendizaje.
-	 */
-	private void saveQTable(String fileName) 
-	{
-		/* Creación del fichero de salida */
-	    try (PrintWriter csvFile = new PrintWriter(new File(fileName))) {
-			
-			if( verbose ) System.out.println(" GENERANDO EL FICHERO DE LA TABLAQ... ");
-			
-			StringBuilder buffer = new StringBuilder();
-			buffer.append("ESTADOS");
-			buffer.append(";");
-			
-			for( ACTIONS accion : ACTIONS.values() ) {
-				buffer.append( accion.toString() );
-				buffer.append(";");
-			}
-			
-			buffer.append("\n");
-			
-			for ( ESTADOS estado: ESTADOS.values() ) {
-				buffer.append(estado.toString());
-				buffer.append(";");
-
-				for( ACTIONS accion : ACTIONS.values() ) {
-					double value = StateManager.Q.get(new ParEstadoAccion(estado, accion));
-					
-					buffer.append( '"' + Double.toString(value).replace('.', ',') + '"');
-					buffer.append(";");
-				}
-				
-				buffer.append("\n");
-			}
-			
-			csvFile.write(buffer.toString());
-			
-			if ( verbose ) System.out.println( " FICHERO GENERADO CORRECTAMENTE! " );
-			
-			csvFile.close();
-			
-	    } catch( Exception ex ) {
-	    	System.out.println(ex.getMessage());
-		}
-	}
 	
 	
 	private double maxQ(ESTADOS s) {
-        ACTIONS[] actions = ACTIONS.values();
+        ACTIONS[] actions = StateManager.ACCIONES;
         double maxValue = Double.MIN_VALUE;
         
         for (int i = 0; i < actions.length; i++) {
@@ -282,7 +230,7 @@ public class TrainingAgent extends AbstractPlayer {
 	
 	private ACTIONS getAccionMaxQ(ESTADOS s)
 	{
-		 ACTIONS[] actions = ACTIONS.values();
+		 ACTIONS[] actions = StateManager.ACCIONES; // Acciones posibles
          ACTIONS accionMaxQ = ACTIONS.ACTION_NIL;
          
          double maxValue = Double.MIN_VALUE;
@@ -303,7 +251,7 @@ public class TrainingAgent extends AbstractPlayer {
 	        if(maxValue < 1.0) // Inicialmente estan a 0, una random
 	        {
 	          int index = randomGenerator.nextInt(numAccionesPosibles);
-	          accionMaxQ = ACTIONS.values()[index];
+	          accionMaxQ = actions[index];
 	        }
 	        
 	        return accionMaxQ;
@@ -311,7 +259,7 @@ public class TrainingAgent extends AbstractPlayer {
 	
 	private void pintaQTable(ESTADOS s)
 	{
-		ACTIONS[] actions = ACTIONS.values();
+		ACTIONS[] actions = StateManager.ACCIONES;
 
         if(verbose) System.out.println("----------Q TABLE -----------------");
         
@@ -324,7 +272,7 @@ public class TrainingAgent extends AbstractPlayer {
             if(verbose) System.out.println(value);
         }
 	        
-        this.saveQTable();
+        //this.saveQTable();
 	}
 } 
     
