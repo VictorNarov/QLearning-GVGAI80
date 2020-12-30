@@ -207,18 +207,22 @@ public class TrainingAgent extends AbstractPlayer {
 		
 		return Q;
 	}
+	/**
+	 * Si no le indicamos el nombre del fichero, usa uno por defecto.
+	 */
+	private void saveQTable() {
+		saveQTable("TablaQ.csv");
+	}
 	
 	/**
 	 * Escribe la tabla Q del atributo de la clase en 
 	 * el fichero QTable.csv, para poder ser leída en 
 	 * una siguiente etapa de aprendizaje.
 	 */
-	private void saveQTable(HashMap<ParEstadoAccion, Double> Q) 
+	private void saveQTable(String fileName) 
 	{
 		/* Creación del fichero de salida */
-	    try (PrintWriter csvFile = new PrintWriter(new File("TablaQ.csv"))) {
-	    	ESTADOS[] estados = StateManager.getEstados();
-			ACTIONS[] actions = ACTIONS.values();
+	    try (PrintWriter csvFile = new PrintWriter(new File(fileName))) {
 			
 			if( verbose ) System.out.println(" GENERANDO EL FICHERO DE LA TABLAQ... ");
 			
@@ -238,15 +242,12 @@ public class TrainingAgent extends AbstractPlayer {
 				buffer.append(";");
 
 				for( ACTIONS accion : ACTIONS.values() ) {
-					//buffer.append(accion.toString());
-					//buffer.append(";");
-					
-					double value = Q.get(new ParEstadoAccion(estado, accion));
+					double value = StateManager.Q.get(new ParEstadoAccion(estado, accion));
 					
 					buffer.append( '"' + Double.toString(value).replace('.', ',') + '"');
 					buffer.append(";");
-					//buffer.append("\n");
 				}
+				
 				buffer.append("\n");
 			}
 			
@@ -257,7 +258,7 @@ public class TrainingAgent extends AbstractPlayer {
 			csvFile.close();
 			
 	    } catch( Exception ex ) {
-			System.out.println(ex.getMessage());
+	    	System.out.println(ex.getMessage());
 		}
 	}
 	
@@ -276,6 +277,7 @@ public class TrainingAgent extends AbstractPlayer {
             if (value > maxValue)
                 maxValue = value;
         }
+        
         return maxValue;
     }
 	
@@ -298,32 +300,33 @@ public class TrainingAgent extends AbstractPlayer {
 	                accionMaxQ = actions[i];
 	            }
 	        }
+	        
 	        if(maxValue < 1.0) // Inicialmente estan a 0, una random
 	        {
 	          int index = randomGenerator.nextInt(numAccionesPosibles);
 	          accionMaxQ = ACTIONS.values()[index];
 	        }
+	        
 	        return accionMaxQ;
 	}
 	
 	private void pintaQTable(ESTADOS s)
 	{
-		 ACTIONS[] actions = ACTIONS.values();
-         
-	        if(verbose) System.out.println("----------Q TABLE -----------------");
-	        for (int i = 0; i < actions.length; i++) {
-	        	
-	        	if(verbose) System.out.print("Actual Q<"+ s.toString() + "," );
-	        	if(verbose) System.out.print(actions[i]+"> = ");
-	        	double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
-	            if(verbose) System.out.println(value);
-	        }
-	        
-        this.saveQTable(StateManager.Q);
-	}
-	
+		ACTIONS[] actions = ACTIONS.values();
 
-	
+        if(verbose) System.out.println("----------Q TABLE -----------------");
+        
+        for (int i = 0; i < actions.length; i++) {
+        	if(verbose) System.out.print("Actual Q<"+ s.toString() + "," );
+        	if(verbose) System.out.print(actions[i]+"> = ");
+        	
+        	double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
+        	
+            if(verbose) System.out.println(value);
+        }
+	        
+        this.saveQTable();
+	}
 } 
     
 /*

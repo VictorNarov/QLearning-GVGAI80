@@ -10,7 +10,7 @@ public class StateManager {
 	static boolean verbose = true;
 	Random randomGenerator;
 	
-	// Contenedor de constantes para identificar los estados
+	/* Contenedor de constantes para identificar los estados */
 	public static enum ESTADOS {
 		OBTENGO_GASOLINA,
 		ESQUIVO_OBSTACULO,
@@ -30,16 +30,14 @@ public class StateManager {
 	public static HashMap<ParEstadoAccion, Integer> R; // TABLA R
 	public static HashMap<ParEstadoAccion, Double> Q; // TABLA Q
 		
-	//VARIABLES
+	/* Variables */
 	private static char mapaObstaculos[][];
 	private static int posActual[];
 	private int numEstados = ESTADOS.values().length;
 	private int numAcciones = ACTIONS.values().length;
 	
-	public StateManager()
-	{
-		if(verbose)
-			System.out.println("Inicializando tablas Q y R.....");
+	public StateManager() {
+		if(verbose) System.out.println("Inicializando tablas Q y R.....");
 		
 		randomGenerator = new Random();
 		inicializaTablaR();
@@ -98,20 +96,6 @@ public class StateManager {
 			if (verbose) System.out.println("tremendo hashhhhhhhhhhhh"); // ??
 	}
 	
-	/*
-	 * Devuelve todos los estados
-	 */
-	public static ESTADOS[] getEstados() {
-		return ESTADOS.values();
-	}
-	
-	/*
-	 * Devuelve todas las acciones
-	 */
-	public static ACTIONS[] getAcciones() {
-		return ACTIONS.values();
-	}
-	
 	public static ESTADOS getEstado(StateObservation obs, int vidaAnterior)
 	{
 		int vidaActual = obs.getAvatarHealthPoints();
@@ -120,14 +104,13 @@ public class StateManager {
 		if (verbose) System.out.println("POS ACTUAL = " + posActual[0]+"-"+posActual[1]);
 		
 		if(posActual[0] != -1 && posActual[1] != -1) {
-		
-		
 			mapaObstaculos = Util.getMapaObstaculos(obs);
 			
 			if(vidaActual > vidaAnterior)
 				return ESTADOS.OBTENGO_GASOLINA;// "+GASOLINA"
 			
 			int[] posGasolina = getPosGasolina();
+			
 			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
 			
 			if(posGasolina[0] != -1 && posGasolina[1] != -1) // SI HAY GASOLINA
@@ -162,7 +145,6 @@ public class StateManager {
 		int numCol = Util.numCol;
 		int numObstaculosDcha = 0;
 		int numObstaculosIzqda = 0;
-		
 				
 		//Desde la casilla a la derecha hasta el arbol de la derecha
 		for (int i = posActual[1]+1; i < numCol -1; i++) {
@@ -189,22 +171,26 @@ public class StateManager {
 		// X X X ||   X 
 		//   O   || X O X
 		
-		/*boolean cond1, cond2, cond3, cond4, cond5;
+		boolean cond1=false, cond2=false, cond3=false, cond4=false, cond5=false;
 		
-		cond1 = mapaObstaculos[posActual[0]-1][posActual[1]]=='X';
-		cond2 = mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X';
-		cond3 = mapaObstaculos[posActual[0]-1][posActual[1]-1]=='X';
-		cond4 = mapaObstaculos[posActual[0]][posActual[1]-1]=='X';
-		cond5 = mapaObstaculos[posActual[0]][posActual[1]-1]=='X';
+		try {
+			cond1 = mapaObstaculos[posActual[0]-1][posActual[1]]=='X';
+			cond2 = mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X';
+			cond3 = mapaObstaculos[posActual[0]-1][posActual[1]-1]=='X';
+			cond4 = mapaObstaculos[posActual[0]][posActual[1]+1]=='X';
+			cond5 = mapaObstaculos[posActual[0]][posActual[1]-1]=='X';
+		} catch(Exception ex) {
+			//
+		}
 		
-		return(cond1 && ( (cond2 && cond3) || (cond4 && cond5) ));*/
+		return(cond1 && ( (cond2 && cond3) || (cond4 && cond5) ));
 		
-		return(mapaObstaculos[posActual[0]-1][posActual[1]]=='X' 
+		/*return(mapaObstaculos[posActual[0]-1][posActual[1]]=='X' 
 				&& ( (mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X'
 					&& mapaObstaculos[posActual[0]-1][posActual[1]-1]=='X')
 				|| (mapaObstaculos[posActual[0]][posActual[1]-1]=='X'
 						&& mapaObstaculos[posActual[0]][posActual[1]-1]=='X') )
-				);
+				);*/
 		
 	}
 	

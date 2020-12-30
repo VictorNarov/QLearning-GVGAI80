@@ -11,7 +11,6 @@ public class Util {
 
 	public static int numCol;
 	public static int numFilas;
-
 	
 	public static int[] getCelda(Vector2d vector, Dimension dim) {
     	int x = (int) Math.floor(vector.x /  dim.getWidth() * numCol);
