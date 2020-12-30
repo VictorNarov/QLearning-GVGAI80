@@ -63,8 +63,8 @@ public class Test {
 		// 4. This plays a single game, in N levels, M times :
 //		String level2 = new String(game).replace(gameName, gameName + "_lvl" + 1);
 		
-		StateManager stateManager = new StateManager("TablaQ.csv");
-		int M = 100;
+		StateManager stateManager = new StateManager();
+		int M = 1000;
 		ArcadeMachine.runGames(game, new String[]{level1}, M, QLearning, null);
 		
 		System.out.println("____________ CONTADORES ESTADOS _____________");

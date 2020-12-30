@@ -27,8 +27,8 @@ public class TrainingAgent extends AbstractPlayer {
 	boolean verbose = StateManager.verbose;
 	
 	//PARAMETROS DEL APRENDIZAJE
-	private double alpha = 0.2; // Factor Explotacion
-	private double gamma = 0.8; // Factor Exlporacion
+	private double alpha = 0.3; // Factor Exploracion 
+	private double gamma = 0.7; // Factor Explotacion
 	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
@@ -117,7 +117,7 @@ public class TrainingAgent extends AbstractPlayer {
     	if(verbose) Util.pintaMapaObstaculos(mapaObstaculos);
     	
     	// Percibimos el estado actual e incrementamos su contador
-    	ESTADOS estadoActual = StateManager.getEstado(stateObs, vidaAnterior);
+    	ESTADOS estadoActual = StateManager.getEstado(stateObs, vidaAnterior, this.mapaObstaculos);
     	estadoActual.incrementa();
     	if(verbose) System.out.println("Estado actual: " + estadoActual.toString());
     	
@@ -136,10 +136,7 @@ public class TrainingAgent extends AbstractPlayer {
     	ACTIONS action = getAccionMaxQ(estadoActual);
         
         // Calcular el siguiente estado habiendo elegido esa acción
-    	
-        StateObservation stateObsCopy = stateObs;
-        stateObsCopy.advance(action);
-    	ESTADOS estadoSiguiente = StateManager.getEstado(stateObsCopy, vidaActual);
+    	ESTADOS estadoSiguiente = StateManager.getEstadoFuturo(stateObs, action);
     	if(verbose) System.out.println("ESTADO SIGUIENTE: " + estadoSiguiente.toString());
     	
     	

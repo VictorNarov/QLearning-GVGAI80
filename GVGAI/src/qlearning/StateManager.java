@@ -30,6 +30,8 @@ public class StateManager {
 		HUECO_IZQDA(0),
 		HUECO_DCHA(0),
 		OBSTACULO_ARRIBA(0),
+		OBSTACULOS_IZQDA(0),
+		OBSTACULOS_DCHA(0),
 		NIL(0);
 
 		private int contador; //Cuenta cada vez que se percibe ese estado
@@ -64,7 +66,7 @@ public class StateManager {
 	public static HashMap<ParEstadoAccion, Double> Q; // TABLA Q
 		
 	/* Variables */
-	private static char mapaObstaculos[][];
+	//private static char mapaObstaculos[][];
 	private static int posActual[];
 	private int numEstados = ESTADOS.values().length;
 	private int numAcciones = ACCIONES.length;
@@ -105,6 +107,7 @@ public class StateManager {
 				
 				else if(estado.equals(ESTADOS.ESQUIVO_OBSTACULO))
 					valorR = 75;
+					
 				
 				/* 
 				 En nuestro caso, recompensamos más que vaya a coger gasolina,
@@ -138,7 +141,14 @@ public class StateManager {
 						
 	}
 	
-	public static ESTADOS getEstado(StateObservation obs, int vidaAnterior)
+	public static ESTADOS getEstadoFuturo(StateObservation obs, ACTIONS action)
+	{
+		int vidaActual = obs.getAvatarHealthPoints();
+		obs.advance(action);
+		return getEstado(obs, vidaActual, Util.getMapaObstaculos(obs));
+	}
+	
+	public static ESTADOS getEstado(StateObservation obs, int vidaAnterior, char[][] mapaObstaculos)
 	{
 		int vidaActual = obs.getAvatarHealthPoints();
 		posActual = Util.getCelda(obs.getAvatarPosition(), obs.getWorldDimension());
@@ -146,33 +156,70 @@ public class StateManager {
 		if (verbose) System.out.println("POS ACTUAL = " + posActual[0]+"-"+posActual[1]);
 		
 		if(posActual[0] != -1 && posActual[1] != -1) {
-			mapaObstaculos = Util.getMapaObstaculos(obs);
+			//mapaObstaculos = Util.getMapaObstaculos(obs);
 			
 			if(vidaActual > vidaAnterior)
 				return ESTADOS.OBTENGO_GASOLINA;// "+GASOLINA"
 			
-			int[] posGasolina = getPosGasolina();
+			if(estoyRodeadoObstaculos(mapaObstaculos) || obs.isGameOver() || posActual[0]==-1 && posActual[1]==-1)
+				return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
 			
-			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
-			
-			if(posGasolina[0] != -1 && posGasolina[1] != -1) // SI HAY GASOLINA
-				return getEstadoGasolina(posGasolina); // Obtiene el estado en funcion de la posicion de la gasolina
-			
-			int[] numObstaculosFila = getObstaculosFila();
+			int[] numObstaculosFila = getObstaculosFila(mapaObstaculos);
 			int numObstaculosIzqda = numObstaculosFila[0];
 			int numObstaculosDcha = numObstaculosFila[1];
 			
 			if (verbose) System.out.println("N obstaculos izqda = " + numObstaculosIzqda);
 			if (verbose) System.out.println("N obstaculos dcha = " + numObstaculosDcha);
 			
-			if(numObstaculosDcha >= 1 || numObstaculosIzqda >= 1)
-				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
 			
+			// Percibimos los huecos
+			if(posActual[0]-1 > 0) {
+				System.out.println("HUECO ARRIBA = " + mapaObstaculos[posActual[0]-1][posActual[1]]);
+				if(mapaObstaculos[posActual[0]-1][posActual[1]] == ' ')
+					return ESTADOS.HUECO_ARRIBA;
+			}
+			
+			if(posActual[0]+1 < Util.numFilas) {
+				System.out.println("HUECO ABAJO = " + mapaObstaculos[posActual[0]+1][posActual[1]]);
+				if(mapaObstaculos[posActual[0]+1][posActual[1]] == ' ')
+					return ESTADOS.HUECO_ABAJO;
+			}
+			
+			if(posActual[1]-1 > 0) {
+				System.out.println("HUECO IZQDA = " + mapaObstaculos[posActual[0]][posActual[1]-1]);
+				if(mapaObstaculos[posActual[0]][posActual[1]-1] == ' ')
+					return ESTADOS.HUECO_IZQDA;
+				
+			}
+			
+			if(posActual[0]+1 > Util.numCol) {
+				System.out.println("HUECO DCHA = " + mapaObstaculos[posActual[0]][posActual[1]+1]);
+				if(mapaObstaculos[posActual[0]][posActual[1]+1] == ' ')
+					return ESTADOS.HUECO_DCHA;
+			}
+				
 			if(mapaObstaculos[posActual[0]-1][posActual[1]] == 'X')
 				return ESTADOS.OBSTACULO_ARRIBA;
 			
-			if(estoyRodeadoObstaculos() || obs.isGameOver())
-				return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
+			if(numObstaculosDcha >= 1 && numObstaculosIzqda==0)
+				return ESTADOS.OBSTACULOS_DCHA;
+			
+			if(numObstaculosIzqda >= 1 && numObstaculosDcha==0)
+				return ESTADOS.OBSTACULOS_IZQDA;
+			
+			int[] posGasolina = getPosGasolina(mapaObstaculos);
+			
+			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
+			
+			if(posGasolina[0] != -1 && posGasolina[1] != -1) // SI HAY GASOLINA
+				return getEstadoGasolina(posGasolina); // Obtiene el estado en funcion de la posicion de la gasolina
+			
+			
+			if(numObstaculosDcha >= 1 && numObstaculosIzqda >= 1)
+				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
+			
+			
+
 			
 		}
 		
@@ -182,7 +229,7 @@ public class StateManager {
 	/*
 	 * Devuelve un array de dos enteros indicando el numero de obstaculos a la izqda y a la derecha del agente
 	 */
-	private static int[] getObstaculosFila()
+	private static int[] getObstaculosFila(char[][] mapaObstaculos)
 	{
 		int numCol = Util.numCol;
 		int numObstaculosDcha = 0;
@@ -208,7 +255,8 @@ public class StateManager {
 		
 	}
 	
-	private static boolean estoyRodeadoObstaculos()
+	
+	private static boolean estoyRodeadoObstaculos(char[][] mapaObstaculos)
 	{
 		// X X X ||   X 
 		//   O   || X O X
@@ -236,7 +284,7 @@ public class StateManager {
 		
 	}
 	
-	private static int[] getPosGasolina()
+	private static int[] getPosGasolina(char[][] mapaObstaculos)
 	{
 		int posGasolina[] = new int[] {-1,-1};
 		boolean encontrado = false;
