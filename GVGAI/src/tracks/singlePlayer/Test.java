@@ -63,13 +63,15 @@ public class Test {
 		// 4. This plays a single game, in N levels, M times :
 //		String level2 = new String(game).replace(gameName, gameName + "_lvl" + 1);
 		
-		StateManager stateManager = new StateManager();
-		int M = 1000;
-		ArcadeMachine.runGames(game, new String[]{level1}, M, QLearning, null);
+		StateManager stateManager = new StateManager("TablaQ.csv");
+		//StateManager stateManager = new StateManager();
+		int M = 1;
+		//ArcadeMachine.runGames(game, new String[]{level1}, M, QLearning, null);
+		ArcadeMachine.runOneGame(game, level1, visuals, QLearning, recordActionsFile, seed, 0);
 		
 		System.out.println("____________ CONTADORES ESTADOS _____________");
 		stateManager.getContadoresEstados();
-		stateManager.saveQTable();
+		//stateManager.saveQTable();
 		
 				
 //		for(int i=0; i<games.length; i++){

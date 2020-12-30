@@ -27,8 +27,8 @@ public class TrainingAgent extends AbstractPlayer {
 	boolean verbose = StateManager.verbose;
 	
 	//PARAMETROS DEL APRENDIZAJE
-	private double alpha = 0.3; // Factor Exploracion 
-	private double gamma = 0.7; // Factor Explotacion
+	private double alpha = 0.2; // Factor Exploracion 
+	private double gamma = 0.8; // Factor Explotacion
 	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
@@ -129,8 +129,8 @@ public class TrainingAgent extends AbstractPlayer {
     	
     	// Seleccionar una entre las posibles acciones desde el estado actual
     	// Criterio de selección: random
-//        int index = randomGenerator.nextInt(numAccionesPosibles);
-//        ACTIONS action = stateObs.getAvailableActions().get(index);
+        //int index = randomGenerator.nextInt(numAccionesPosibles);
+        //ACTIONS action = StateManager.ACCIONES[index];
     	
     	// Criterio seleccion: maxQ
     	ACTIONS action = getAccionMaxQ(estadoActual);
@@ -145,8 +145,9 @@ public class TrainingAgent extends AbstractPlayer {
     	if(verbose) System.out.println("Consulto q actual Q<" + estadoActual.toString() +","+action.toString()+"> = " + q);
 
         double maxQ = maxQ(estadoSiguiente);
-        int r = StateManager.R.get(new ParEstadoAccion(estadoActual, action));
-
+        //int r = StateManager.R.get(new ParEstadoAccion(estadoActual, action));
+        int r = StateManager.R.get(new ParEstadoAccion(estadoSiguiente, action));
+        
         double value = q + alpha * (r + gamma * maxQ - q);
         
         // Actualizamos la tabla Q
@@ -170,6 +171,14 @@ public class TrainingAgent extends AbstractPlayer {
 		
 	  	//if(stateObs.isGameOver()) this.saveQTable(); //Guardamos la tablaQ si termina el juego
 	  	
+		if(verbose)
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
         return action;
     }
     

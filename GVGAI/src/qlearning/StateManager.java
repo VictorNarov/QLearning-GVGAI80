@@ -1,7 +1,6 @@
 package qlearning;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Random;
@@ -9,8 +8,6 @@ import java.util.Scanner;
 
 import core.game.StateObservation;
 import ontology.Types.ACTIONS;
-import qlearning.Util;
-import qlearning.StateManager.ESTADOS;
 
 public class StateManager {
 	public static boolean verbose = true;
@@ -32,6 +29,8 @@ public class StateManager {
 		OBSTACULO_ARRIBA(0),
 		OBSTACULOS_IZQDA(0),
 		OBSTACULOS_DCHA(0),
+		BORDE_DCHA(0),
+		BORDE_IZQDA(0),
 		NIL(0);
 
 		private int contador; //Cuenta cada vez que se percibe ese estado
@@ -85,7 +84,7 @@ public class StateManager {
 		
 		randomGenerator = new Random();
 		inicializaTablaR();
-		inicializaTablaQ(false);
+		inicializaTablaQ(true);
 		cargaTablaQ(ficheroTablaQ);
 		
 	}
@@ -107,8 +106,9 @@ public class StateManager {
 				
 				else if(estado.equals(ESTADOS.ESQUIVO_OBSTACULO))
 					valorR = 75;
-					
 				
+				else if(estado.equals(ESTADOS.MUERTE_SEGURA))
+					valorR = -100;
 				/* 
 				 En nuestro caso, recompensamos más que vaya a coger gasolina,
 				 puesto que no sirve de nada que esquive si se queda sin gasolina.
@@ -116,7 +116,22 @@ public class StateManager {
 				
 				R.put(new ParEstadoAccion(estado,accion), valorR);
 			}
+		// Castigamos el suicidio
+		R.put(new ParEstadoAccion(ESTADOS.BORDE_IZQDA,ACTIONS.ACTION_LEFT), -100);
+		R.put(new ParEstadoAccion(ESTADOS.BORDE_DCHA,ACTIONS.ACTION_RIGHT), -100);
+		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_IZQDA,ACTIONS.ACTION_LEFT), -1000);
+		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_DCHA,ACTIONS.ACTION_RIGHT), -1000);
+		R.put(new ParEstadoAccion(ESTADOS.OBSTACULO_ARRIBA,ACTIONS.ACTION_UP), -1000);
 		
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 75);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_UP), 75);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_IZQDA,ACTIONS.ACTION_LEFT), 75);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 75);
+		
+		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ABAJO,ACTIONS.ACTION_DOWN), 75);
+		//R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_UP), -750);
+		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_IZQDA,ACTIONS.ACTION_LEFT), 75);
+		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_DCHA,ACTIONS.ACTION_RIGHT), 75);
 	}
 	
 	/*
@@ -155,6 +170,12 @@ public class StateManager {
 		
 		if (verbose) System.out.println("POS ACTUAL = " + posActual[0]+"-"+posActual[1]);
 		
+		if(posActual[1] == 2)
+			return ESTADOS.BORDE_IZQDA;
+		
+		if(posActual[1] == Util.numCol-2)
+			return ESTADOS.BORDE_DCHA;
+		
 		if(posActual[0] != -1 && posActual[1] != -1) {
 			//mapaObstaculos = Util.getMapaObstaculos(obs);
 			
@@ -171,53 +192,61 @@ public class StateManager {
 			if (verbose) System.out.println("N obstaculos izqda = " + numObstaculosIzqda);
 			if (verbose) System.out.println("N obstaculos dcha = " + numObstaculosDcha);
 			
+			int[] posGasolina = getPosGasolina(mapaObstaculos);
 			
+			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
+			
+/*						
 			// Percibimos los huecos
-			if(posActual[0]-1 > 0) {
-				System.out.println("HUECO ARRIBA = " + mapaObstaculos[posActual[0]-1][posActual[1]]);
-				if(mapaObstaculos[posActual[0]-1][posActual[1]] == ' ')
+			if(posActual[0]-2 > 0) {
+
+				if(mapaObstaculos[posActual[0]-1][posActual[1]] == ' ' && mapaObstaculos[posActual[0]-2][posActual[1]] == ' ')
 					return ESTADOS.HUECO_ARRIBA;
 			}
 			
 			if(posActual[0]+1 < Util.numFilas) {
-				System.out.println("HUECO ABAJO = " + mapaObstaculos[posActual[0]+1][posActual[1]]);
 				if(mapaObstaculos[posActual[0]+1][posActual[1]] == ' ')
 					return ESTADOS.HUECO_ABAJO;
 			}
 			
 			if(posActual[1]-1 > 0) {
-				System.out.println("HUECO IZQDA = " + mapaObstaculos[posActual[0]][posActual[1]-1]);
+				
 				if(mapaObstaculos[posActual[0]][posActual[1]-1] == ' ')
 					return ESTADOS.HUECO_IZQDA;
 				
 			}
 			
-			if(posActual[0]+1 > Util.numCol) {
-				System.out.println("HUECO DCHA = " + mapaObstaculos[posActual[0]][posActual[1]+1]);
+			if(posActual[0]+1 < Util.numCol) {
+			
 				if(mapaObstaculos[posActual[0]][posActual[1]+1] == ' ')
 					return ESTADOS.HUECO_DCHA;
 			}
+			
+*/
+
+			
+			if(posGasolina[0] != -1 && posGasolina[1] != -1) { // SI HAY GASOLINA
+				ESTADOS estadoGasolina = getEstadoGasolina(posGasolina); // Obtiene el estado en funcion de la posicion de la gasolina
+				if(!estadoGasolina.equals(ESTADOS.GASOLINA_ARRIBA))
+					return estadoGasolina;
+			}
+			
+			if(numObstaculosDcha >= 1 && numObstaculosIzqda >= 1 || mapaObstaculos[posActual[0]-1][posActual[1]] == ' ')
+				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
 			
 			if(posActual[0]-1 > Util.numFilas)	
 				if(mapaObstaculos[posActual[0]-1][posActual[1]] == 'X')
 					return ESTADOS.OBSTACULO_ARRIBA;
 			
-			if(numObstaculosDcha >= 1 && numObstaculosIzqda==0)
-				return ESTADOS.OBSTACULOS_DCHA;
+			if(posActual[1]+1 < Util.numCol)
+				if(mapaObstaculos[posActual[0]-1][posActual[1]+1] == 'X' || mapaObstaculos[posActual[0]][posActual[1]+1] == 'X')
+					return ESTADOS.OBSTACULOS_DCHA;
 			
-			if(numObstaculosIzqda >= 1 && numObstaculosDcha==0)
-				return ESTADOS.OBSTACULOS_IZQDA;
-			
-			int[] posGasolina = getPosGasolina(mapaObstaculos);
-			
-			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
-			
-			if(posGasolina[0] != -1 && posGasolina[1] != -1) // SI HAY GASOLINA
-				return getEstadoGasolina(posGasolina); // Obtiene el estado en funcion de la posicion de la gasolina
-			
-			
-			if(numObstaculosDcha >= 1 && numObstaculosIzqda >= 1)
-				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
+			if(posActual[1]-1 > 0)
+				if(mapaObstaculos[posActual[0]-1][posActual[1]-1] == 'X' || mapaObstaculos[posActual[0]][posActual[1]-1] == 'X')
+					return ESTADOS.OBSTACULOS_IZQDA;
+				
+
 			
 			
 
