@@ -40,10 +40,10 @@ public class Test {
 
 		// Game and level to play
 		int gameIdx = 80;
-		int levelIdx = 4; // level names from 0 to 4 (game_lvlN.txt).
+		
 		String gameName = games[gameIdx][1];
 		String game = games[gameIdx][0];
-		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
+
 
 		String recordActionsFile = null;// "actions_" + games[gameIdx] + "_lvl"
 						// + levelIdx + "_" + seed + ".txt";
@@ -64,15 +64,45 @@ public class Test {
 		// 4. This plays a single game, in N levels, M times :
 //		String level2 = new String(game).replace(gameName, gameName + "_lvl" + 1);
 		
-		StateManager stateManager = new StateManager("TablaQ.csv");
-		//StateManager stateManager = new StateManager();
 		
-		int M = 1;
-		//ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTraining, null);
-		ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
+		int levelIdx = 4; // level names from 0 to 4 (game_lvlN.txt).
+		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
+		StateManager stateManager;
+		
+		boolean training = true;
+		if(training)
+		{
+			stateManager = new StateManager(false);
+			int M = 1000;
+			
+			for (int i = 0; i <= 4; i++) {
+				levelIdx = i; // level names from 0 to 4 (game_lvlN.txt).
+				level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
+				ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTraining, null);
+			}
+			
+			
+			stateManager.saveQTable();
+			
+		}
+		else
+		{
+			stateManager = new StateManager("TablaQ.csv", true);
+			ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
+		}
 		
 		System.out.println("____________ CONTADORES ESTADOS _____________");
 		stateManager.getContadoresEstados();
+		
+		//StateManager stateManager = new StateManager(false);
+		
+
+		//ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTraining, null);
+		//ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
+		
+		//ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTesting, null);
+		
+		
 		//stateManager.saveQTable();
 		
 				

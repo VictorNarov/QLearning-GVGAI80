@@ -133,7 +133,7 @@ public class TestingAgent extends AbstractPlayer {
 	  	
 		if(verbose)
 			try {
-				Thread.sleep(250);
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

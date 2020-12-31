@@ -27,8 +27,8 @@ public class TrainingAgent extends AbstractPlayer {
 	boolean verbose = StateManager.verbose;
 	
 	//PARAMETROS DEL APRENDIZAJE
-	private double alpha = 0.2; // Factor Exploracion 
-	private double gamma = 0.8; // Factor Explotacion
+	private double alpha = 0.6; // Factor Exploracion 
+	private double gamma = 0.4; // Factor Explotacion
 	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
