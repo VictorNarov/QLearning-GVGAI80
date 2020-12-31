@@ -556,4 +556,25 @@ public class StateManager {
 	{
 		return new int[]{(int)(pos[0]*2), (int)(pos[1]*2)};
 	}
+	
+// _____________________________________________________________________
+//  METODOS VISUALES
+//_____________________________________________________________________	
+	public static void pintaQTable(ESTADOS s)
+	{
+		ACTIONS[] actions = StateManager.ACCIONES;
+
+        System.out.println("----------Q TABLE -----------------");
+        
+        for (int i = 0; i < actions.length; i++) {
+        	 System.out.print("Actual Q<"+ s.toString() + "," );
+        	 System.out.print(actions[i]+"> = ");
+        	
+        	double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
+        	
+            System.out.println(value);
+        }
+	        
+        System.out.println("----------Q TABLE -----------------");
+	}
 }

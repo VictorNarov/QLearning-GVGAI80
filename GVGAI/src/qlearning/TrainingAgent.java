@@ -134,11 +134,11 @@ public class TrainingAgent extends AbstractPlayer {
     	
     	// Seleccionar una entre las posibles acciones desde el estado actual
     	// Criterio de selección: random
-        //int index = randomGenerator.nextInt(numAccionesPosibles);
-        //ACTIONS action = StateManager.ACCIONES[index];
+        int index = randomGenerator.nextInt(numAccionesPosibles);
+        ACTIONS action = StateManager.ACCIONES[index];
     	
     	// Criterio seleccion: maxQ
-    	ACTIONS action = getAccionMaxQ(estadoActual);
+    	//ACTIONS action = getAccionMaxQ(estadoActual);
     	
     	if(verbose) System.out.println("--> DECIDE HACER: " + action.toString());
         

@@ -26,7 +26,8 @@ public class Test {
 //        String sampleRHEAController = "tracks.singlePlayer.advanced.sampleRHEA.Agent";
 //		String sampleOLETSController = "tracks.singlePlayer.advanced.olets.Agent";
     	
-    	String QLearning = "qlearning.TrainingAgent";
+    	String QLearningTraining = "qlearning.TrainingAgent";
+    	String QLearningTesting = "qlearning.TestingAgent";
 
 
 		//Load available games
@@ -65,9 +66,10 @@ public class Test {
 		
 		StateManager stateManager = new StateManager("TablaQ.csv");
 		//StateManager stateManager = new StateManager();
+		
 		int M = 1;
-		//ArcadeMachine.runGames(game, new String[]{level1}, M, QLearning, null);
-		ArcadeMachine.runOneGame(game, level1, visuals, QLearning, recordActionsFile, seed, 0);
+		//ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTraining, null);
+		ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
 		
 		System.out.println("____________ CONTADORES ESTADOS _____________");
 		stateManager.getContadoresEstados();
