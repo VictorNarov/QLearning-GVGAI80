@@ -1,13 +1,17 @@
 package qlearning;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
 
 import core.game.StateObservation;
+import core.game.Observation;
 import ontology.Types.ACTIONS;
+import tools.Vector2d;
 
 public class StateManager {
 	public static boolean verbose = true;
@@ -160,21 +164,26 @@ public class StateManager {
 	{
 		int vidaActual = obs.getAvatarHealthPoints();
 		obs.advance(action);
-		return getEstado(obs, vidaActual, Util.getMapaObstaculos(obs));
+		return getEstado(obs, vidaActual, getMapaObstaculos(obs));
 	}
 	
 	public static ESTADOS getEstado(StateObservation obs, int vidaAnterior, char[][] mapaObstaculos)
 	{
 		int vidaActual = obs.getAvatarHealthPoints();
-		posActual = Util.getCelda(obs.getAvatarPosition(), obs.getWorldDimension());
+		double [] pos = getCeldaPreciso(obs.getAvatarPosition(), obs.getWorldDimension()); 
+		posActual = getIndiceMapa(pos);
 		
-		if (verbose) System.out.println("POS ACTUAL = " + posActual[0]+"-"+posActual[1]);
+		if (verbose) System.out.println("POS ACTUAL = " + pos[0]+"-"+pos[1]);
+		if(verbose) System.out.println("POSICION REAL: " + obs.getAvatarPosition().toString());
 		
 		if(posActual[1] == 2)
 			return ESTADOS.BORDE_IZQDA;
 		
-		if(posActual[1] == Util.numCol-2)
+		if(posActual[1] == Util.numCol*2-2)
 			return ESTADOS.BORDE_DCHA;
+		
+		if(estoyRodeadoObstaculos(mapaObstaculos) || obs.isGameOver() || posActual[0]==-1 && posActual[1]==-1)
+			return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
 		
 		if(posActual[0] != -1 && posActual[1] != -1) {
 			//mapaObstaculos = Util.getMapaObstaculos(obs);
@@ -182,8 +191,6 @@ public class StateManager {
 			if(vidaActual > vidaAnterior)
 				return ESTADOS.OBTENGO_GASOLINA;// "+GASOLINA"
 			
-			if(estoyRodeadoObstaculos(mapaObstaculos) || obs.isGameOver() || posActual[0]==-1 && posActual[1]==-1)
-				return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
 			
 			int[] numObstaculosFila = getObstaculosFila(mapaObstaculos);
 			int numObstaculosIzqda = numObstaculosFila[0];
@@ -231,11 +238,11 @@ public class StateManager {
 					return estadoGasolina;
 			}
 			
-			if(numObstaculosDcha >= 1 && numObstaculosIzqda >= 1 || mapaObstaculos[posActual[0]-1][posActual[1]] == ' ')
+			if(numObstaculosDcha >= 1 && numObstaculosIzqda >= 1 || mapaObstaculos[posActual[0]-1][posActual[1]] == ' ' && mapaObstaculos[posActual[0]-2][posActual[1]] == ' ')
 				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
 			
 			if(posActual[0]-1 > Util.numFilas)	
-				if(mapaObstaculos[posActual[0]-1][posActual[1]] == 'X')
+				if(mapaObstaculos[posActual[0]-1][posActual[1]] == 'X' || mapaObstaculos[posActual[0]-2][posActual[1]] == 'X' || mapaObstaculos[posActual[0]-3][posActual[1]] == 'X' || mapaObstaculos[posActual[0]-4][posActual[1]] == 'X')
 					return ESTADOS.OBSTACULO_ARRIBA;
 			
 			if(posActual[1]+1 < Util.numCol)
@@ -245,12 +252,7 @@ public class StateManager {
 			if(posActual[1]-1 > 0)
 				if(mapaObstaculos[posActual[0]-1][posActual[1]-1] == 'X' || mapaObstaculos[posActual[0]][posActual[1]-1] == 'X')
 					return ESTADOS.OBSTACULOS_IZQDA;
-				
-
-			
-			
-
-			
+					
 		}
 		
 		return ESTADOS.NIL;
@@ -266,7 +268,7 @@ public class StateManager {
 		int numObstaculosIzqda = 0;
 				
 		//Desde la casilla a la derecha hasta el arbol de la derecha
-		for (int i = posActual[1]+1; i < numCol -1; i++) {
+		for (int i = posActual[1]+1; i < numCol*2 -1; i++) {
 			// Si en la fila actual, columna i tenemos un obstaculo
 			//if (verbose) System.out.println("mirando casilla derecha: " + posActual[0]+"-"+i);
 			if(mapaObstaculos[posActual[0]][i] == 'X')
@@ -483,6 +485,75 @@ public class StateManager {
 	    	System.out.println(ex.getMessage());
 		}
 	}
-
+// _____________________________________________________________________
+//                    METODOS PERCEPCION MAPA
+// _____________________________________________________________________
 	
+	public static char[][] getMapaObstaculos(StateObservation obs)
+	{
+		// El desplazamiento de un jugador es en 0.5 casillas
+		char[][] mapaObstaculos = new char[Util.numFilas*2][Util.numCol*2];
+		
+		for(int i=0; i<Util.numFilas*2; i++)
+			for(int j=0; j<Util.numCol*2; j++)
+				mapaObstaculos[i][j] = ' ';
+		
+		
+	    	for(ArrayList<Observation> lista : obs.getMovablePositions())
+	    		for(Observation objeto : lista)
+	    		{
+	    			
+	    			double[] pos = getCeldaPreciso(objeto.position, obs.getWorldDimension()); // Posicion en casilla real 0.5
+	    			int [] indicePos = getIndiceMapa(pos); // Indice del mapa
+	    		
+	    			
+	    			System.out.println("Objeto en " + pos[0] + "-" + pos[1] + " = "+ objeto.itype + " REAL: " + objeto.position.toString());
+	    			//System.out.println(this.mapaObstaculos[pos[0]][pos[1]]);
+	    			
+	    			switch(objeto.itype)
+					{    					
+						case 1:
+							mapaObstaculos[indicePos[0]][indicePos[1]] = 'O';
+							break;
+						case 10:
+						case 16:
+							mapaObstaculos[indicePos[0]][indicePos[1]] = '|';
+							break;
+						case 6:
+						case 7:
+						case 13:
+						case 14:
+							mapaObstaculos[indicePos[0]][indicePos[1]] = 'X';
+							break;
+						case 9:
+						case 15:
+							mapaObstaculos[indicePos[0]][indicePos[1]] = 'G';
+							break; 
+						default:
+							mapaObstaculos[indicePos[0]][indicePos[1]] = '.';
+							break;
+	    		}
+			}
+    	
+    	return mapaObstaculos;
+	}
+	
+	/*
+	 * Obtiene la posicion en filas,col con precisión .5
+	 */
+	public static double[] getCeldaPreciso(Vector2d vector, Dimension dim) {
+		
+    	double x = vector.x /  dim.getWidth() * Util.numCol;
+    	double y = vector.y /  dim.getHeight() * Util.numFilas;
+    	
+    	return new double[] {y,x};
+	}
+	
+	/*
+	 * Devuelve el indice del mapa de obstaculos que corresponde el parametro de posicion
+	 */
+	public static int[] getIndiceMapa(double [] pos)
+	{
+		return new int[]{(int)(pos[0]*2), (int)(pos[1]*2)};
+	}
 }

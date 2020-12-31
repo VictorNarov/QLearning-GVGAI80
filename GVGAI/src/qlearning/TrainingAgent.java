@@ -76,12 +76,12 @@ public class TrainingAgent extends AbstractPlayer {
 		numFilas = so.getWorldDimension().height / so.getBlockSize();
 		
 		//mapaBlank = new char[numFilas][numCol];
-		mapaObstaculos = new char[numFilas][numCol];
+		//mapaObstaculos = new char[numFilas][numCol];
 		
 		//for(int i=0; i<numFilas; i++)
 		//	for(int j=0; j<numCol; j++)
 		//		mapaBlank[i][j] = ' ';
-		
+		if(verbose) System.out.println("DIMENSION MUNDO: " + so.getWorldDimension().toString());
 		if(verbose) System.out.println("NUM FILAS = " + numFilas);
 		if(verbose) System.out.println("NUM COL = " + numCol);
 		
@@ -107,11 +107,15 @@ public class TrainingAgent extends AbstractPlayer {
     	// 01 - PERCEPCIÓN DEL ENTORNO
     	// -----------------------------------------------------------------------
     	int vidaActual = stateObs.getAvatarHealthPoints();
-    	int[] posJugador = getCelda(stateObs.getAvatarPosition(),dim);
+    	
+    	double[] pos = StateManager.getCeldaPreciso(stateObs.getAvatarPosition(),dim);
+    	int[] posJugador = StateManager.getIndiceMapa(pos); // Indice del mapa
+    	
     	if(verbose) System.out.println("VIDA ACTUAL = "+vidaActual);
     	if(verbose) System.out.println("POSICION = " + posJugador[0] + "-" + posJugador[1]);
     	
-    	this.mapaObstaculos = Util.getMapaObstaculos(stateObs); //Actualizamos el mapa percibido
+    	
+    	this.mapaObstaculos = StateManager.getMapaObstaculos(stateObs); //Actualizamos el mapa percibido
     	mapaObstaculos[posJugador[0]][posJugador[1]] = 'O'; //Marcamos la posicion del jugador
 
     	if(verbose) Util.pintaMapaObstaculos(mapaObstaculos);
@@ -125,7 +129,8 @@ public class TrainingAgent extends AbstractPlayer {
     	// ALGORITMO Q LEARNING
     	// -----------------------------------------------------------------------
     	
-    	pintaQTable(estadoActual);
+    	if(verbose) pintaQTable(estadoActual);
+    	
     	
     	// Seleccionar una entre las posibles acciones desde el estado actual
     	// Criterio de selección: random
@@ -134,6 +139,8 @@ public class TrainingAgent extends AbstractPlayer {
     	
     	// Criterio seleccion: maxQ
     	ACTIONS action = getAccionMaxQ(estadoActual);
+    	
+    	if(verbose) System.out.println("--> DECIDE HACER: " + action.toString());
         
         // Calcular el siguiente estado habiendo elegido esa acción
     	ESTADOS estadoSiguiente = StateManager.getEstadoFuturo(stateObs, action);
@@ -181,7 +188,7 @@ public class TrainingAgent extends AbstractPlayer {
 		
         return action;
     }
-    
+/*    
     private int[] getCelda(Vector2d vector, Dimension dim2) {
     	int x = (int) Math.floor(vector.x /  dim.getWidth() * numCol);
     	int y = (int) Math.floor(vector.y /  dim.getHeight() * numFilas);
@@ -197,7 +204,7 @@ public class TrainingAgent extends AbstractPlayer {
     	
     	return new int[] {y,x};
     }
-	
+*/
 	/**
 	 * Lee el fichero que contiene la tabla Q (QTable.csv)
 	 * Vuelca el fichero en un diccionario de pares Estado-Accion N x M
@@ -243,10 +250,10 @@ public class TrainingAgent extends AbstractPlayer {
 	        
 	        for (int i = 0; i < actions.length; i++) {
 	        	
-	        	if(verbose) System.out.print("Actual maxQ<"+ s.toString() + "," );
-	        	if(verbose) System.out.print(actions[i]+"> = ");
+	        	//if(verbose) System.out.print("Actual maxQ<"+ s.toString() + "," );
+	        	//if(verbose) System.out.print(actions[i]+"> = ");
 	            double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
-	            if(verbose) System.out.println(value);
+	            //if(verbose) System.out.println(value);
 	 
 	            if (value > maxValue) {
 	                maxValue = value;
@@ -267,18 +274,18 @@ public class TrainingAgent extends AbstractPlayer {
 	{
 		ACTIONS[] actions = StateManager.ACCIONES;
 
-        if(verbose) System.out.println("----------Q TABLE -----------------");
+        System.out.println("----------Q TABLE -----------------");
         
         for (int i = 0; i < actions.length; i++) {
-        	if(verbose) System.out.print("Actual Q<"+ s.toString() + "," );
-        	if(verbose) System.out.print(actions[i]+"> = ");
+        	 System.out.print("Actual Q<"+ s.toString() + "," );
+        	 System.out.print(actions[i]+"> = ");
         	
         	double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
         	
-            if(verbose) System.out.println(value);
+            System.out.println(value);
         }
 	        
-        //this.saveQTable();
+        System.out.println("----------Q TABLE -----------------");
 	}
 } 
     

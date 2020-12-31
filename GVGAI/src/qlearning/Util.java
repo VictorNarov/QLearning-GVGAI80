@@ -11,14 +11,14 @@ public class Util {
 
 	public static int numCol;
 	public static int numFilas;
-	
+/*	
 	public static int[] getCelda(Vector2d vector, Dimension dim) {
     	int x = (int) Math.floor(vector.x /  dim.getWidth() * numCol);
     	int y = (int) Math.floor(vector.y /  dim.getHeight() * numFilas);
     	
     	return new int[] {y,x};
 	}
-	
+*/
 	//mapaBlank = new char[numFilas][numCol];
 	//private static char[][] mapaObstaculos = new char[numFilas][numCol];
 	
@@ -31,6 +31,7 @@ public class Util {
 	//15, 9 -> BIDÓN DE GASOLINA
 	//10,16 -> ÁRBOLES
 	//1 -> JUGADOR
+/*
 	public static char[][] getMapaObstaculos(StateObservation obs)
 	{
 		char[][] mapaObstaculos = new char[numFilas][numCol];
@@ -42,10 +43,11 @@ public class Util {
 	    	for(ArrayList<Observation> lista : obs.getMovablePositions())
 	    		for(Observation objeto : lista)
 	    		{
-	    			//System.out.println(pos[0] + "," + pos[1]+" -> "+ob.itype);
-	    			int[] pos = Util.getCelda(objeto.position, obs.getWorldDimension());
 	    			
-	    			//System.out.println("Mirando objeto en " + pos[0] + "-" + pos[1]);
+	    			int[] pos = Util.getCelda(objeto.position, obs.getWorldDimension());
+	    		
+	    			
+	    			System.out.println("Objeto en " + pos[0] + "-" + pos[1] + " = "+ objeto.itype + " REAL: " + objeto.position.toString());
 	    			//System.out.println(this.mapaObstaculos[pos[0]][pos[1]]);
 	    			
 	    			switch(objeto.itype)
@@ -75,14 +77,14 @@ public class Util {
     	
     	return mapaObstaculos;
 	}
-	
+*/	
 	public static void pintaMapaObstaculos(char [][] mapaObstaculos)
 	{
 		
 		System.out.println("-----------------------------------");
-		for(int i=0; i<numFilas; i++) {
+		for(int i=0; i<numFilas*2; i++) {
     		System.out.println();
-    		for(int j=0; j<numCol; j++)
+    		for(int j=0; j<numCol*2; j++)
     			System.out.print(mapaObstaculos[i][j]);
     	}
     	System.out.println();
