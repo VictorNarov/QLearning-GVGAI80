@@ -20,7 +20,7 @@ public class TrainingAgent extends AbstractPlayer {
 	
 	//PARAMETROS DEL APRENDIZAJE
 	private double alpha = 0.1; // Factor Exploracion tamaño del paso
-	private double gamma = 0.8; // Factor descuento recompensa futura
+	private double gamma = 0.7; // Factor descuento recompensa futura
 	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
@@ -263,7 +263,7 @@ public class TrainingAgent extends AbstractPlayer {
 
 	        if(maxValue < 1) // Inicialmente estan a 0, una random
 	        {
-	          int index = new Random().nextInt(numAccionesPosibles);
+	          int index = new Random().nextInt(StateManager.ACCIONES.length);
 	          accionMaxQ = actions[index];
 	        }
 	        

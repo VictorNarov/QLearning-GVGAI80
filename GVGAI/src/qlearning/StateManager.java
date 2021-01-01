@@ -358,10 +358,7 @@ public class StateManager {
 			if (verbose) System.out.println("N obstaculos izqda = " + numObstaculosIzqda);
 			if (verbose) System.out.println("N obstaculos dcha = " + numObstaculosDcha);
 			
-			int[] posGasolina = getPosGasolina(mapaObstaculos);
-			
-			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
-			
+
 /*						
 			// Percibimos los huecos
 			if(posActual[0]-2 > 0) {
@@ -395,8 +392,13 @@ public class StateManager {
 			if(hayObstaculosDireccion(pos, DIRECCIONES.DCHA, 2.0, mapaObstaculos))
 				return ESTADOS.OBSTACULOS_DCHA;
 			
-			// SI HAY GASOLINA ESTADO SEGUN LA POSICION DE LA GASOLIAN
-			if(posGasolina[0] != -1 && posGasolina[1] != -1) { // SI HAY GASOLINA
+			int[] posGasolina = getPosGasolina(mapaObstaculos);
+			
+			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
+			
+			
+			// SI TENGO CAPACIDAD PARA REPOSTAR Y SI HAY GASOLINA, ESTADO SEGUN LA POSICION DE LA GASOLINA
+			if(vidaActual < 11 && posGasolina[0] != -1 && posGasolina[1] != -1) { // SI HAY GASOLINA
 				ESTADOS estadoGasolina = getEstadoGasolina(posGasolina); // Obtiene el estado en funcion de la posicion de la gasolina
 				if(!estadoGasolina.equals(ESTADOS.GASOLINA_ARRIBA))
 					return estadoGasolina;
