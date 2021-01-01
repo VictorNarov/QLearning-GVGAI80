@@ -27,8 +27,8 @@ public class TrainingAgent extends AbstractPlayer {
 	boolean verbose = StateManager.verbose;
 	
 	//PARAMETROS DEL APRENDIZAJE
-	private double alpha = 0.4; // Factor Exploracion 
-	private double gamma = 0.6; // Factor Explotacion
+	private double alpha = 0.1; // Factor Exploracion tamaño del paso
+	private double gamma = 0.5; // Factor descuento recompensa futura
 	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
@@ -129,17 +129,25 @@ public class TrainingAgent extends AbstractPlayer {
     	// ALGORITMO Q LEARNING
     	// -----------------------------------------------------------------------
     	
-    	if(verbose) pintaQTable(estadoActual);
-    	
+    	if(verbose)pintaQTable(estadoActual);
     	
     	// Seleccionar una entre las posibles acciones desde el estado actual
+    	ACTIONS action;
+    	boolean randomPolicy = true; 
+    	
     	// Criterio de selección: random
-        int index = randomGenerator.nextInt(numAccionesPosibles);
-        ACTIONS action = StateManager.ACCIONES[index];
+    	if(randomPolicy) {
+	    	
+	        int index = randomGenerator.nextInt(numAccionesPosibles);
+	        action = StateManager.ACCIONES[index];
+    	}
+    	else // Criterio seleccion: maxQ
+    	{
+    		
+        	action = getAccionMaxQ(estadoActual);
+    	}
     	
-    	// Criterio seleccion: maxQ
-    	//ACTIONS action = getAccionMaxQ(estadoActual);
-    	
+
     	if(verbose) System.out.println("--> DECIDE HACER: " + action.toString());
         
         // Calcular el siguiente estado habiendo elegido esa acción
@@ -246,7 +254,7 @@ public class TrainingAgent extends AbstractPlayer {
 		 ACTIONS[] actions = StateManager.ACCIONES; // Acciones posibles
          ACTIONS accionMaxQ = ACTIONS.ACTION_NIL;
          
-         double maxValue = Double.MIN_VALUE;
+         double maxValue = Double.MIN_VALUE; // 0.000...001
 	        
 	        for (int i = 0; i < actions.length; i++) {
 	        	
@@ -260,8 +268,8 @@ public class TrainingAgent extends AbstractPlayer {
 	                accionMaxQ = actions[i];
 	            }
 	        }
-	        
-	        if(maxValue < 1.0) // Inicialmente estan a 0, una random
+
+	        if(maxValue < 1) // Inicialmente estan a 0, una random
 	        {
 	          int index = randomGenerator.nextInt(numAccionesPosibles);
 	          accionMaxQ = actions[index];

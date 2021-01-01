@@ -2,30 +2,14 @@ package tracks.singlePlayer;
 
 import java.util.Random;
 
-import core.logging.Logger;
 import qlearning.StateManager;
 import tools.Utils;
 import tracks.ArcadeMachine;
 
-/**
- * Created with IntelliJ IDEA. User: Diego Date: 04/10/13 Time: 16:29 This is a
- * Java port from Tom Schaul's VGDL - https://github.com/schaul/py-vgdl
- */
 public class Test {
 
     public static void main(String[] args) {
 
-		// Available tracks:
-//		String sampleRandomController = "tracks.singlePlayer.simple.sampleRandom.Agent";
-//		String doNothingController = "tracks.singlePlayer.simple.doNothing.Agent";
-//		String sampleOneStepController = "tracks.singlePlayer.simple.sampleonesteplookahead.Agent";
-//		String sampleFlatMCTSController = "tracks.singlePlayer.simple.greedyTreeSearch.Agent";
-//
-//		String sampleMCTSController = "tracks.singlePlayer.advanced.sampleMCTS.Agent";
-//        String sampleRSController = "tracks.singlePlayer.advanced.sampleRS.Agent";
-//        String sampleRHEAController = "tracks.singlePlayer.advanced.sampleRHEA.Agent";
-//		String sampleOLETSController = "tracks.singlePlayer.advanced.olets.Agent";
-    	
     	String QLearningTraining = "qlearning.TrainingAgent";
     	String QLearningTesting = "qlearning.TestingAgent";
 
@@ -46,100 +30,65 @@ public class Test {
 
 
 		String recordActionsFile = null;// "actions_" + games[gameIdx] + "_lvl"
-						// + levelIdx + "_" + seed + ".txt";
-						// where to record the actions
-						// executed. null if not to save.
-
-		// 1. This starts a game, in a level, played by a human.
-//		ArcadeMachine.playOneGame(game, level1, recordActionsFile, 234234234);
-
-		// 2. This plays a game in a level by the controller.
-//		ArcadeMachine.runOneGame(game, level1, visuals, QLearning, recordActionsFile, seed, 0);
-
-
-		// 3. This replays a game from an action file previously recorded
-	//	 String readActionsFile = recordActionsFile;
-	//	 ArcadeMachine.replayGame(game, level1, visuals, readActionsFile);
-
-		// 4. This plays a single game, in N levels, M times :
-//		String level2 = new String(game).replace(gameName, gameName + "_lvl" + 1);
+	
 		
-		
-		int levelIdx = 0; // level names from 0 to 4 (game_lvlN.txt).
+		int levelIdx = 3; // level names from 0 to 4 (game_lvlN.txt).
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 		StateManager stateManager;
 		
-		boolean training = false;
-		if(training)
+		boolean training = true; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
+		boolean testingAfterTraining = true; // Probar todos los niveles despues del entrenamiento
+		boolean randomTablaQ = true; // Verdadero: crea la tabla Q con valores random, si no, a cero
+		boolean verbose = false; // Mostrar informacion de la partida mientras se ejecuta
+		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
 		{
-			stateManager = new StateManager(false);
-			int M = 500;
-			
-//			for (int i = 0; i <= 4; i++) {
-//				levelIdx = i; // level names from 0 to 4 (game_lvlN.txt).
-//				level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
-//				ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTraining, null);
-//			}
-			
+			stateManager = new StateManager(randomTablaQ,verbose);
+			int M = 500; // Numero de partidas a jugar
+					
 			for (int i = 0; i < M; i++) {
 				levelIdx = new Random().nextInt(5); // level names from 0 to 4 (game_lvlN.txt).
 				level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 				System.out.println("\t\t\t\t\t\t\t\t\t\tIteración " + i + " / "+ M);
-				System.out.println("\t\t\t\t\t\t\t\t\t\tTraining 5 partidas en level: " + levelIdx);
-				ArcadeMachine.runGames(game, new String[]{level1}, 5, QLearningTraining, null);
+				System.out.println("\t\t\t\t\t\t\t\t\t\tlevel: " + levelIdx);
+				ArcadeMachine.runGames(game, new String[]{level1}, 1, QLearningTraining, null);
 			}
-			
-			
-			
+		
 			stateManager.saveQTable();
 			
-		}
-		else
-		{
-			stateManager = new StateManager("TablaQ.csv", true);
-			ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
-		}
-		
-		System.out.println("____________ CONTADORES ESTADOS _____________");
-		stateManager.getContadoresEstados();
-		
-		//StateManager stateManager = new StateManager(false);
-		
-
-		//ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTraining, null);
-		//ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
-		
-		//ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTesting, null);
-		
-		
-		//stateManager.saveQTable();
-		
+			if(testingAfterTraining) // Probar todos los niveles
+			{
+				double[] ticksPartidas = new double[5];
 				
-//		for(int i=0; i<games.length; i++){
-//			game = games[i][0];
-//			gameName = games[i][1];
-//			level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
-//			ArcadeMachine.runGames(game, new String[]{level1}, M, QLearning, null);
-//		}
+				stateManager = new StateManager("TablaQ.csv", verbose);
+				for (int i = 0; i <= 4; i++) {
+				
+					levelIdx = i; // level names from 0 to 4 (game_lvlN.txt).
+					level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
+					ticksPartidas[i] = ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0)[2];
+				}
+				
+				System.out.println("____________________________________________________");
+				System.out.println("____________ ESTADISTICAS PARTIDAS _________________");
+				double total = 0;
+				for(int i = 0; i <= 4; i++) {
+						System.out.println("TICKS JUEGO " + i + " =\t"+ ticksPartidas[i]);
+						total += ticksPartidas[i];
+				}
+				
+				System.out.println("MEDIA TICKS =\t" + total / 5.0);
+				System.out.println("____________________________________________________");
+				
+			}
+			else // Modo Test, probar el nivel indicado
+			{
+				stateManager = new StateManager("TablaQ.csv", true);
+				ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
+			}
+			
+			System.out.println("____________ CONTADORES ESTADOS _____________________");
+			stateManager.getContadoresEstados();
+		
 
-		//5. This plays N games, in the first L levels, M times each. Actions to file optional (set saveActions to true).
-//		int N = games.length, L = 2, M = 1;
-//		boolean saveActions = false;
-//		String[] levels = new String[L];
-//		String[] actionFiles = new String[L*M];
-//		for(int i = 0; i < N; ++i)
-//		{
-//			int actionIdx = 0;
-//			game = games[i][0];
-//			gameName = games[i][1];
-//			for(int j = 0; j < L; ++j){
-//				levels[j] = game.replace(gameName, gameName + "_lvl" + j);
-//				if(saveActions) for(int k = 0; k < M; ++k)
-//				actionFiles[actionIdx++] = "actions_game_" + i + "_level_" + j + "_" + k + ".txt";
-//			}
-//			ArcadeMachine.runGames(game, levels, M, sampleRHEAController, saveActions? actionFiles:null);
-//		}
-
-
+		}
     }
 }

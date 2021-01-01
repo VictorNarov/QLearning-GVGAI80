@@ -77,12 +77,13 @@ public class StateManager {
 	private int numEstados = ESTADOS.values().length;
 	private int numAcciones = ACCIONES.length;
 	
-	public StateManager(boolean verbose) {
+	public StateManager(boolean randomTablaQ, boolean verbose) {
 		if(verbose) System.out.println("Inicializando tablas Q y R.....");
 		
 		randomGenerator = new Random();
 		inicializaTablaR();
-		inicializaTablaQ(true);
+		
+		inicializaTablaQ(randomTablaQ);
 		
 		StateManager.verbose = verbose;
 	}
@@ -165,10 +166,10 @@ public class StateManager {
 		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_DCHA,ACTIONS.ACTION_RIGHT), -100);
 		R.put(new ParEstadoAccion(ESTADOS.OBSTACULO_ARRIBA,ACTIONS.ACTION_UP), -100);
 		
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 100);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_UP), 100);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_IZQDA,ACTIONS.ACTION_LEFT), 100);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 100);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 1000);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_UP), 1000);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_IZQDA,ACTIONS.ACTION_LEFT), 1000);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 1000);
 		
 		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ABAJO,ACTIONS.ACTION_DOWN), 75);
 		//R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_UP), -750);
@@ -192,8 +193,10 @@ public class StateManager {
 		else {
 			/* Inicializamos todos los valores Q a cero */
 			for (ESTADOS estado: ESTADOS.values()) 
-				for(ACTIONS accion : ACCIONES)
+				for(ACTIONS accion : ACCIONES) {
 					Q.put(new ParEstadoAccion(estado,accion), 0.0);
+					//System.out.println(estado.toString() + "," + accion.toString() + " = 0.0");
+				}
 		}
 						
 	}
@@ -338,10 +341,10 @@ public class StateManager {
 		if(posActual[1] >= Util.numCol*2-4)
 			return ESTADOS.BORDE_DCHA;
 		
-		if(estoyRodeadoObstaculos(mapaObstaculos) || obs.isGameOver() || posActual[0]==-1 && posActual[1]==-1)
+		if(estoyRodeadoObstaculos(mapaObstaculos) || obs.isGameOver() || posActual[0]<0 && posActual[1]<0)
 			return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
 		
-		if(posActual[0] != -1 && posActual[1] != -1) {
+		if(posActual[0] > 0 && posActual[1] > 0) {
 			//mapaObstaculos = Util.getMapaObstaculos(obs);
 			
 			if(vidaActual > vidaAnterior)
