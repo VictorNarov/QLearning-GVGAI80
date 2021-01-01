@@ -125,6 +125,32 @@ public class StateManager {
 				
 				else if(estado.equals(ESTADOS.MUERTE_SEGURA))
 					valorR = -100;
+				
+//				else if(estado.toString().contains("HUECO"))
+//				{
+//					switch (estado.toString().split("_")[1])
+//					{
+//					case "ARRIBA": 
+//						if(!accion.equals(ACTIONS.ACTION_UP))
+//							R.put(new ParEstadoAccion(estado,accion), -1000);
+//						break;
+//						
+//					case "ABAJO": 
+//						if(!accion.equals(ACTIONS.ACTION_DOWN))
+//							R.put(new ParEstadoAccion(estado,accion), -1000);
+//						break;
+//						
+//					case "IZQDA": 
+//						if(!accion.equals(ACTIONS.ACTION_LEFT))
+//							R.put(new ParEstadoAccion(estado,accion), -1000);
+//						break;
+//						
+//					case "DCHA": 
+//						if(!accion.equals(ACTIONS.ACTION_DOWN))
+//							R.put(new ParEstadoAccion(estado,accion), -1000);
+//						break;
+//					}	
+//				}
 				/* 
 				 En nuestro caso, recompensamos más que vaya a coger gasolina,
 				 puesto que no sirve de nada que esquive si se queda sin gasolina.
@@ -135,14 +161,14 @@ public class StateManager {
 		// Castigamos el suicidio
 		R.put(new ParEstadoAccion(ESTADOS.BORDE_IZQDA,ACTIONS.ACTION_LEFT), -100);
 		R.put(new ParEstadoAccion(ESTADOS.BORDE_DCHA,ACTIONS.ACTION_RIGHT), -100);
-		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_IZQDA,ACTIONS.ACTION_LEFT), -1000);
-		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_DCHA,ACTIONS.ACTION_RIGHT), -1000);
-		R.put(new ParEstadoAccion(ESTADOS.OBSTACULO_ARRIBA,ACTIONS.ACTION_UP), -1000);
+		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_IZQDA,ACTIONS.ACTION_LEFT), -100);
+		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_DCHA,ACTIONS.ACTION_RIGHT), -100);
+		R.put(new ParEstadoAccion(ESTADOS.OBSTACULO_ARRIBA,ACTIONS.ACTION_UP), -100);
 		
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 1000);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_UP), 1000);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_IZQDA,ACTIONS.ACTION_LEFT), 1000);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 1000);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 100);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_UP), 100);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_IZQDA,ACTIONS.ACTION_LEFT), 100);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 100);
 		
 		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ABAJO,ACTIONS.ACTION_DOWN), 75);
 		//R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_UP), -750);
@@ -294,11 +320,12 @@ public class StateManager {
 		double [] pos = getCeldaPreciso(obs.getAvatarPosition(), obs.getWorldDimension()); 
 		posActual = getIndiceMapa(pos);
 		
-		HashSet<Integer> huecosProximos = getHuecosFila(posActual,2,mapaObstaculos);
-		if(verbose) System.out.println("HUECOS DIST 3: " + huecosProximos.toString());
-		
 		if (verbose) System.out.println("POS ACTUAL = " + pos[0]+"-"+pos[1]);
 		if(verbose) System.out.println("POSICION REAL: " + obs.getAvatarPosition().toString());		
+		
+		int distanciaVisionHuecos = 3;
+		HashSet<Integer> huecosProximos = getHuecosFila(posActual,distanciaVisionHuecos,mapaObstaculos);
+		if(verbose) System.out.println("HUECOS DIST "+ distanciaVisionHuecos+ ": " + huecosProximos.toString());
 		
 		// Si se acerca el pasillo para sobrevivir
 		if(huecosProximos.size() > 0)
@@ -535,7 +562,7 @@ public class StateManager {
 				}
 			if(huecoValido) {
 				posiblesHuecos.add(iCol);
-				if(verbose) System.out.println("POSIBLE HUECO cols: " +iCol);
+				//if(verbose) System.out.println("POSIBLE HUECO cols: " +iCol);
 			}
 		}
 		
@@ -611,9 +638,7 @@ public class StateManager {
 				break;
 			}
 				
-				
-			
-		
+
 		
 		/* Misma columna */
 		if(indiceMapaHueco == posActual[1]) 

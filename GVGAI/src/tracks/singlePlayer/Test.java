@@ -65,21 +65,30 @@ public class Test {
 //		String level2 = new String(game).replace(gameName, gameName + "_lvl" + 1);
 		
 		
-		int levelIdx = 4; // level names from 0 to 4 (game_lvlN.txt).
+		int levelIdx = 0; // level names from 0 to 4 (game_lvlN.txt).
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 		StateManager stateManager;
 		
-		boolean training = true;
+		boolean training = false;
 		if(training)
 		{
 			stateManager = new StateManager(false);
-			int M = 1000;
+			int M = 500;
 			
-			for (int i = 0; i <= 4; i++) {
-				levelIdx = i; // level names from 0 to 4 (game_lvlN.txt).
+//			for (int i = 0; i <= 4; i++) {
+//				levelIdx = i; // level names from 0 to 4 (game_lvlN.txt).
+//				level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
+//				ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTraining, null);
+//			}
+			
+			for (int i = 0; i < M; i++) {
+				levelIdx = new Random().nextInt(5); // level names from 0 to 4 (game_lvlN.txt).
 				level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
-				ArcadeMachine.runGames(game, new String[]{level1}, M, QLearningTraining, null);
+				System.out.println("\t\t\t\t\t\t\t\t\t\tIteración " + i + " / "+ M);
+				System.out.println("\t\t\t\t\t\t\t\t\t\tTraining 5 partidas en level: " + levelIdx);
+				ArcadeMachine.runGames(game, new String[]{level1}, 5, QLearningTraining, null);
 			}
+			
 			
 			
 			stateManager.saveQTable();
