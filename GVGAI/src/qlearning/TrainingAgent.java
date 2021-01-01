@@ -1,15 +1,8 @@
 package qlearning;
 
 import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Random;
 
 import core.game.Observation;
@@ -20,7 +13,6 @@ import ontology.Types.ACTIONS;
 import qlearning.StateManager.ESTADOS;
 
 import tools.ElapsedCpuTimer;
-import tools.Vector2d;
 
 
 public class TrainingAgent extends AbstractPlayer {
@@ -28,7 +20,7 @@ public class TrainingAgent extends AbstractPlayer {
 	
 	//PARAMETROS DEL APRENDIZAJE
 	private double alpha = 0.1; // Factor Exploracion tamaño del paso
-	private double gamma = 0.5; // Factor descuento recompensa futura
+	private double gamma = 0.8; // Factor descuento recompensa futura
 	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
@@ -44,7 +36,7 @@ public class TrainingAgent extends AbstractPlayer {
 	// VARIABLES Q LEARNING
 	private int vidaAnterior;
 	
-	int numAccionesPosibles;
+	static int numAccionesPosibles;
 	
     /**
      * Random generator for the agent.
@@ -249,7 +241,7 @@ public class TrainingAgent extends AbstractPlayer {
         return maxValue;
     }
 	
-	private ACTIONS getAccionMaxQ(ESTADOS s)
+	public static ACTIONS getAccionMaxQ(ESTADOS s)
 	{
 		 ACTIONS[] actions = StateManager.ACCIONES; // Acciones posibles
          ACTIONS accionMaxQ = ACTIONS.ACTION_NIL;
@@ -271,7 +263,7 @@ public class TrainingAgent extends AbstractPlayer {
 
 	        if(maxValue < 1) // Inicialmente estan a 0, una random
 	        {
-	          int index = randomGenerator.nextInt(numAccionesPosibles);
+	          int index = new Random().nextInt(numAccionesPosibles);
 	          accionMaxQ = actions[index];
 	        }
 	        

@@ -103,9 +103,7 @@ public class StateManager {
 
 // _____________________________________________________________________
 //  METODOS TABLAS APRENDIZAJE
-//_____________________________________________________________________
-
-	
+//_____________________________________________________________________	
 	private void inicializaTablaR()
 	{
 		R = new HashMap<ParEstadoAccion, Integer>(numEstados*numAcciones);
@@ -172,9 +170,12 @@ public class StateManager {
 		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 1000);
 		
 		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ABAJO,ACTIONS.ACTION_DOWN), 75);
-		//R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_UP), -750);
+		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_NIL), 1000);
 		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_IZQDA,ACTIONS.ACTION_LEFT), 75);
 		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_DCHA,ACTIONS.ACTION_RIGHT), 75);
+		
+		R.put(new ParEstadoAccion(ESTADOS.NIL,ACTIONS.ACTION_NIL), 1000);
+		R.put(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO,ACTIONS.ACTION_DOWN), 1000);
 	}
 	
 	/*
@@ -919,5 +920,23 @@ public class StateManager {
         }
 	        
         System.out.println("----------Q TABLE -----------------");
+	}
+	
+	public static void pintaQTableResumen()
+	{
+		
+		ESTADOS[] estados = ESTADOS.values();
+		
+        System.out.println("____________________ Q TABLE RESUMEN ______________________");
+        
+        for (int i = 0; i < estados.length; i++) {
+        	ACTIONS accion = TrainingAgent.getAccionMaxQ(estados[i]);
+        	double q = StateManager.Q.get(new ParEstadoAccion(estados[i], accion));
+        	
+        	 System.out.println("maxQ<"+ estados[i].toString() + "," + accion.toString() +"> = "+ q);
+      	
+        }
+	        
+        System.out.println("_________________________________________________________");
 	}
 }

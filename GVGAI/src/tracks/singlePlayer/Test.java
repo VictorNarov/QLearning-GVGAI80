@@ -3,6 +3,7 @@ package tracks.singlePlayer;
 import java.util.Random;
 
 import qlearning.StateManager;
+import qlearning.StateManager.ESTADOS;
 import tools.Utils;
 import tracks.ArcadeMachine;
 
@@ -37,12 +38,14 @@ public class Test {
 		StateManager stateManager;
 		
 		boolean training = true; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
-		boolean testingAfterTraining = true; // Probar todos los niveles despues del entrenamiento
-		boolean randomTablaQ = true; // Verdadero: crea la tabla Q con valores random, si no, a cero
-		boolean verbose = false; // Mostrar informacion de la partida mientras se ejecuta
+		
+		boolean verbose = true; // Mostrar informacion de la partida mientras se ejecuta
 		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
 		{
-			stateManager = new StateManager(randomTablaQ,verbose);
+			boolean testingAfterTraining = true; // Probar todos los niveles despues del entrenamiento
+			boolean randomTablaQ = false; // Verdadero: crea la tabla Q con valores random, si no, a cero
+			
+			stateManager = new StateManager(randomTablaQ,false);
 			int M = 500; // Numero de partidas a jugar
 					
 			for (int i = 0; i < M; i++) {
@@ -79,16 +82,21 @@ public class Test {
 				System.out.println("____________________________________________________");
 				
 			}
-			else // Modo Test, probar el nivel indicado
-			{
-				stateManager = new StateManager("TablaQ.csv", true);
-				ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
-			}
-			
-			System.out.println("____________ CONTADORES ESTADOS _____________________");
-			stateManager.getContadoresEstados();
+		}
+		else // Modo Test, probar el nivel indicado
+		{
+			stateManager = new StateManager("TablaQ.csv", true);
+			ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
+		}
+		
+		System.out.println("____________ CONTADORES ESTADOS _____________________");
+		stateManager.getContadoresEstados();
+		
+
+		StateManager.pintaQTableResumen();
+		
 		
 
 		}
     }
-}
+
