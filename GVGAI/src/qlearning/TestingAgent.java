@@ -28,7 +28,7 @@ public class TestingAgent extends AbstractPlayer {
 	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
-	Dimension dim;
+	Dimension dim; 
 	
 	private int numFilas;
 	private int numCol;
@@ -123,7 +123,7 @@ public class TestingAgent extends AbstractPlayer {
     	
     	    	
     	// Criterio seleccion: maxQ
-    	ACTIONS action = getAccionMaxQ(estadoActual);
+    	ACTIONS action = StateManager.getAccionMaxQ(estadoActual);
     	
     	if(verbose) System.out.println("--> DECIDE HACER: " + action.toString());
         
@@ -131,46 +131,18 @@ public class TestingAgent extends AbstractPlayer {
 		vidaAnterior = vidaActual;
 		
 	  	
-		if(verbose)
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//		if(verbose)
+//			try {
+//				Thread.sleep(50);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		
         return action;
     }
 
 	
-	private ACTIONS getAccionMaxQ(ESTADOS s)
-	{
-		 ACTIONS[] actions = StateManager.ACCIONES; // Acciones posibles
-         ACTIONS accionMaxQ = ACTIONS.ACTION_NIL;
-         
-         double maxValue = Double.MIN_VALUE;
-	        
-	        for (int i = 0; i < actions.length; i++) {
-	        	
-	        	//if(verbose) System.out.print("Actual maxQ<"+ s.toString() + "," );
-	        	//if(verbose) System.out.print(actions[i]+"> = ");
-	            double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
-	            //if(verbose) System.out.println(value);
-	 
-	            if (value > maxValue) {
-	                maxValue = value;
-	                accionMaxQ = actions[i];
-	            }
-	        }
-	        
-	        if(maxValue < 1.0) // Inicialmente estan a 0, una random
-	        {
-	          int index = randomGenerator.nextInt(numAccionesPosibles);
-	          accionMaxQ = actions[index];
-	        }
-	        
-	        return accionMaxQ;
-	}
 	
 
 } 

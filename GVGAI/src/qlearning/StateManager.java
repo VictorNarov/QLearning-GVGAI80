@@ -12,10 +12,14 @@ import java.util.Scanner;
 import core.game.StateObservation;
 import core.game.Observation;
 import ontology.Types.ACTIONS;
+import qlearning.StateManager.ESTADOS;
 import tools.Vector2d;
 
 public class StateManager {
 	public static boolean verbose = false;
+	//Variables simulacion training
+	public static int numIteraciones;
+	public static int iteracionActual;
 	Random randomGenerator;
 	
 	/* Contenedor de constantes para identificar los estados */
@@ -123,7 +127,7 @@ public class StateManager {
 					valorR = 75;
 				
 				else if(estado.equals(ESTADOS.MUERTE_SEGURA))
-					valorR = -100;
+					valorR = -150;
 				
 //				else if(estado.toString().contains("HUECO"))
 //				{
@@ -163,19 +167,21 @@ public class StateManager {
 		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_IZQDA,ACTIONS.ACTION_LEFT), -100);
 		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_DCHA,ACTIONS.ACTION_RIGHT), -100);
 		R.put(new ParEstadoAccion(ESTADOS.OBSTACULO_ARRIBA,ACTIONS.ACTION_UP), -100);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_UP), -50);
+		R.put(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO,ACTIONS.ACTION_UP), -50);
 		
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 1000);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_UP), 1000);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_IZQDA,ACTIONS.ACTION_LEFT), 1000);
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 1000);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 100);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_NIL), 100);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_IZQDA,ACTIONS.ACTION_LEFT), 100);
+		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 100);
 		
 		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ABAJO,ACTIONS.ACTION_DOWN), 75);
-		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_NIL), 1000);
+		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_NIL), 100);
 		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_IZQDA,ACTIONS.ACTION_LEFT), 75);
 		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_DCHA,ACTIONS.ACTION_RIGHT), 75);
 		
-		R.put(new ParEstadoAccion(ESTADOS.NIL,ACTIONS.ACTION_NIL), 1000);
-		R.put(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO,ACTIONS.ACTION_DOWN), 1000);
+		R.put(new ParEstadoAccion(ESTADOS.NIL,ACTIONS.ACTION_NIL), 100);
+		R.put(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO,ACTIONS.ACTION_DOWN), 100);
 	}
 	
 	/*
@@ -189,7 +195,7 @@ public class StateManager {
 			/* Inicializamos todos los valores Q a random */
 			for (ESTADOS estado: ESTADOS.values()) 
 				for(ACTIONS accion : ACCIONES)			
-					Q.put(new ParEstadoAccion(estado,accion), randomGenerator.nextDouble() * 100);
+					Q.put(new ParEstadoAccion(estado,accion), (randomGenerator.nextDouble()+1) * 50);
 		}
 		else {
 			/* Inicializamos todos los valores Q a cero */
@@ -306,6 +312,36 @@ public class StateManager {
 	    	System.out.println(ex.getMessage());
 		}
 	}
+
+	public static ACTIONS getAccionMaxQ(ESTADOS s)
+	{
+		 ACTIONS[] actions = StateManager.ACCIONES; // Acciones posibles
+         ACTIONS accionMaxQ = ACTIONS.ACTION_NIL;
+         
+         double maxValue = Double.NEGATIVE_INFINITY; // - inf
+	        
+	        for (int i = 0; i < actions.length; i++) {
+	        	
+	        	//if(verbose) System.out.print("Actual maxQ<"+ s.toString() + "," );
+	        	//if(verbose) System.out.print(actions[i]+"> = ");
+	            double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
+	            //if(verbose) System.out.println(value);
+	 
+	            if (value > maxValue) {
+	                maxValue = value;
+	                accionMaxQ = actions[i];
+	            }
+	        }
+
+	        if(maxValue <= 0) // Inicialmente estan a 0, una random
+	        {
+	          int index = new Random().nextInt(StateManager.ACCIONES.length);
+	          accionMaxQ = actions[index];
+	        }
+	        
+	        return accionMaxQ;
+	}
+		
 // _____________________________________________________________________
 //  METODOS PERCEPCION ESTADOS
 //_____________________________________________________________________
@@ -331,10 +367,10 @@ public class StateManager {
 		HashSet<Integer> huecosProximos = getHuecosFila(posActual,distanciaVisionHuecos,mapaObstaculos);
 		if(verbose) System.out.println("HUECOS DIST "+ distanciaVisionHuecos+ ": " + huecosProximos.toString());
 		
-		// Si se acerca el pasillo para sobrevivir
-		if(huecosProximos.size() > 0)
-			return getEstadoHueco(huecosProximos, posActual);
-			
+	
+	   // ESTADOS DE MUERTE		
+		if(obs.isGameOver() || posActual[0]<0 && posActual[1]<0 || estoyRodeadoObstaculos(mapaObstaculos))
+			return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
 		
 		if(posActual[1] <= 2)
 			return ESTADOS.BORDE_IZQDA;
@@ -342,8 +378,16 @@ public class StateManager {
 		if(posActual[1] >= Util.numCol*2-4)
 			return ESTADOS.BORDE_DCHA;
 		
-		if(estoyRodeadoObstaculos(mapaObstaculos) || obs.isGameOver() || posActual[0]<0 && posActual[1]<0)
-			return ESTADOS.MUERTE_SEGURA; // "MUERTE SEGURA"
+		if(!hayObstaculosDireccion(pos, DIRECCIONES.ARRIBA, 1.0, mapaObstaculos) &&
+				!hayObstaculosDireccion(pos, DIRECCIONES.IZQDA, 0.5, mapaObstaculos) && 
+				!hayObstaculosDireccion(pos, DIRECCIONES.DCHA, 0.5, mapaObstaculos) &&
+				(hayObstaculosDireccion(pos, DIRECCIONES.IZQDA, 2, mapaObstaculos) ||
+				hayObstaculosDireccion(pos, DIRECCIONES.DCHA, 2, mapaObstaculos)))
+			return ESTADOS.ESQUIVO_OBSTACULO;
+		
+		// Si se acerca el pasillo para sobrevivir
+		if(huecosProximos.size() > 0)
+			return getEstadoHueco(huecosProximos, posActual);
 		
 		if(posActual[0] > 0 && posActual[1] > 0) {
 			//mapaObstaculos = Util.getMapaObstaculos(obs);
@@ -403,9 +447,6 @@ public class StateManager {
 				if(!estadoGasolina.equals(ESTADOS.GASOLINA_ARRIBA))
 					return estadoGasolina;
 			}
-			
-			if(!hayObstaculosDireccion(pos, DIRECCIONES.ARRIBA, 1.0, mapaObstaculos) && !hayObstaculosDireccion(pos, DIRECCIONES.IZQDA, 0.5, mapaObstaculos) && !hayObstaculosDireccion(pos, DIRECCIONES.DCHA, 0.5, mapaObstaculos) )
-				return ESTADOS.ESQUIVO_OBSTACULO;
 			
 			if(hayObstaculosDireccion(pos, DIRECCIONES.ARRIBA, 3.0, mapaObstaculos))
 				return ESTADOS.OBSTACULO_ARRIBA;
@@ -468,19 +509,26 @@ public class StateManager {
 		// X X X ||   X 
 		//   O   || X O X
 		
-		boolean cond1=false, cond2=false, cond3=false, cond4=false, cond5=false;
+		boolean cond1=false, cond2=false, cond3=false, cond4=false, cond5=false, cond6=false, cond7=false;
 		
 		try {
-			cond1 = mapaObstaculos[posActual[0]-1][posActual[1]]=='X';
-			cond2 = mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X';
-			cond3 = mapaObstaculos[posActual[0]-1][posActual[1]-1]=='X';
-			cond4 = mapaObstaculos[posActual[0]][posActual[1]+1]=='X';
-			cond5 = mapaObstaculos[posActual[0]][posActual[1]-1]=='X';
+			cond1 = mapaObstaculos[posActual[0]-1][posActual[1]]=='X' || mapaObstaculos[posActual[0]-2][posActual[1]]=='X'; //arriba
+			
+			cond2 = mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X' || mapaObstaculos[posActual[0]-1][posActual[1]+2]=='X'; //arriba derecha
+			cond3 = mapaObstaculos[posActual[0]-1][posActual[1]-1]=='X' || mapaObstaculos[posActual[0]-1][posActual[1]-2]=='X'; //arriba izqda
+			cond6 = mapaObstaculos[posActual[0]-2][posActual[1]+1]=='X' || mapaObstaculos[posActual[0]-2][posActual[1]+2]=='X'; //+arriba derecha
+			cond7 = mapaObstaculos[posActual[0]-2][posActual[1]-1]=='X' || mapaObstaculos[posActual[0]-2][posActual[1]-2]=='X'; //+arriba izqda
+			
+			cond4 = mapaObstaculos[posActual[0]][posActual[1]+1]=='X' || mapaObstaculos[posActual[0]][posActual[1]+2]=='X'; // derecha
+			cond5 = mapaObstaculos[posActual[0]][posActual[1]-1]=='X' || mapaObstaculos[posActual[0]][posActual[1]-2]=='X';	//izquierda
+			
+			
+			
 		} catch(Exception ex) {
 			//
 		}
 		
-		return(cond1 && ( (cond2 && cond3) || (cond4 && cond5) ));
+		return(cond1 && ( (cond2 && cond3 || cond6 && cond7) || (cond4 && cond5) ));
 		
 		/*return(mapaObstaculos[posActual[0]-1][posActual[1]]=='X' 
 				&& ( (mapaObstaculos[posActual[0]-1][posActual[1]+1]=='X'
@@ -559,7 +607,7 @@ public class StateManager {
 		
 		for(int iCol=2; iCol <= (Util.numCol*2-4); iCol++) { // De izquierda a derecha del mapa
 			huecoValido = true;
-			for(int iFila=indiceMapaJugador[0]-1; iFila >= indiceUltimaCasilla; iFila--)  //Desde media fila arriba del jugador hasta la ultima casilla a explorar
+			for(int iFila=indiceMapaJugador[0]; iFila >= indiceUltimaCasilla; iFila--)  //Desde fila del jugador hasta la ultima casilla a explorar
 				if(mapaObstaculos[iFila][iCol] == 'X')
 				{
 					huecoValido = false;
@@ -638,14 +686,21 @@ public class StateManager {
 				break;
 			}
 		
-		if(!encontradoHuecoPosJugador)
+		//Si no, elige el hueco mas cercano al jugador
+		if(!encontradoHuecoPosJugador) {
+			int difMenor = Integer.MAX_VALUE;
+			
 			for(int hueco : huecos) {
-				indiceMapaHueco = hueco;
-				break;
-			}
+				int difDistancia = Math.abs(hueco - posActual[1]); //Distancia en indice de columnas hasta el hueco
 				
+				if(difDistancia < difMenor) { // Si es menor que el minimo actual
+					difMenor = difDistancia; // Actualizamos la diferencia
+					indiceMapaHueco = hueco; // Guardamos ese posible mejor hueco
+				}
+				
+			}
+		}
 
-		
 		/* Misma columna */
 		if(indiceMapaHueco == posActual[1]) 
 			return ESTADOS.HUECO_ARRIBA; 
@@ -932,7 +987,7 @@ public class StateManager {
         System.out.println("____________________ Q TABLE RESUMEN ______________________");
         
         for (int i = 0; i < estados.length; i++) {
-        	ACTIONS accion = TrainingAgent.getAccionMaxQ(estados[i]);
+        	ACTIONS accion = getAccionMaxQ(estados[i]);
         	double q = StateManager.Q.get(new ParEstadoAccion(estados[i], accion));
         	
         	 System.out.println("maxQ<"+ estados[i].toString() + "," + accion.toString() +"> = "+ q);

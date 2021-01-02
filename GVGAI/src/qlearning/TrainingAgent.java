@@ -20,7 +20,7 @@ public class TrainingAgent extends AbstractPlayer {
 	
 	//PARAMETROS DEL APRENDIZAJE
 	private double alpha = 0.1; // Factor Exploracion tamaño del paso
-	private double gamma = 0.7; // Factor descuento recompensa futura
+	private double gamma = 0.2; // Factor descuento recompensa futura
 	
 	// VARIABLES 
 	ArrayList<Observation>[] inmov;
@@ -104,8 +104,7 @@ public class TrainingAgent extends AbstractPlayer {
     	int[] posJugador = StateManager.getIndiceMapa(pos); // Indice del mapa
     	
     	if(verbose) System.out.println("VIDA ACTUAL = "+vidaActual);
-    	if(verbose) System.out.println("POSICION = " + posJugador[0] + "-" + posJugador[1]);
-    	
+    	if(verbose) System.out.println("POSICION = " + posJugador[0] + "-" + posJugador[1]);   	
     	
     	this.mapaObstaculos = StateManager.getMapaObstaculos(stateObs); //Actualizamos el mapa percibido
     	mapaObstaculos[posJugador[0]][posJugador[1]] = 'O'; //Marcamos la posicion del jugador
@@ -121,11 +120,17 @@ public class TrainingAgent extends AbstractPlayer {
     	// ALGORITMO Q LEARNING
     	// -----------------------------------------------------------------------
     	
-    	if(verbose)pintaQTable(estadoActual);
+    	if(verbose)StateManager.pintaQTable(estadoActual);
     	
     	// Seleccionar una entre las posibles acciones desde el estado actual
     	ACTIONS action;
-    	boolean randomPolicy = true; 
+    	boolean randomPolicy=false; 
+    	
+    	// Criterio de selección: random hasta 1/3 iteraciones
+//    	if(StateManager.iteracionActual < StateManager.numIteraciones * 0.25)
+//    		randomPolicy = true;
+//    	else
+//    		randomPolicy = false;
     	
     	// Criterio de selección: random
     	if(randomPolicy) {
@@ -135,10 +140,8 @@ public class TrainingAgent extends AbstractPlayer {
     	}
     	else // Criterio seleccion: maxQ
     	{
-    		
-        	action = getAccionMaxQ(estadoActual);
+        	action = StateManager.getAccionMaxQ(estadoActual);
     	}
-    	
 
     	if(verbose) System.out.println("--> DECIDE HACER: " + action.toString());
         
@@ -156,35 +159,23 @@ public class TrainingAgent extends AbstractPlayer {
         int r = StateManager.R.get(new ParEstadoAccion(estadoSiguiente, action));
         
         double value = q + alpha * (r + gamma * maxQ - q);
-        
+        //System.out.println(value);
         // Actualizamos la tabla Q
         StateManager.Q.put(new ParEstadoAccion(estadoActual, action), value);
  	
-    		
-    
-    	
-//    	try {
-//			Thread.sleep(500);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	
-    	
-
 		vidaAnterior = vidaActual;
 		
 		if(verbose) System.out.println("--> DECIDE HACER: " + action.toString());
 		
 	  	//if(stateObs.isGameOver()) this.saveQTable(); //Guardamos la tablaQ si termina el juego
 	  	
-		if(verbose)
-			try {
-				Thread.sleep(250);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//		if(verbose)
+//			try {
+//				Thread.sleep(250);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		
         return action;
     }
@@ -241,52 +232,8 @@ public class TrainingAgent extends AbstractPlayer {
         return maxValue;
     }
 	
-	public static ACTIONS getAccionMaxQ(ESTADOS s)
-	{
-		 ACTIONS[] actions = StateManager.ACCIONES; // Acciones posibles
-         ACTIONS accionMaxQ = ACTIONS.ACTION_NIL;
-         
-         double maxValue = Double.MIN_VALUE; // 0.000...001
-	        
-	        for (int i = 0; i < actions.length; i++) {
-	        	
-	        	//if(verbose) System.out.print("Actual maxQ<"+ s.toString() + "," );
-	        	//if(verbose) System.out.print(actions[i]+"> = ");
-	            double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
-	            //if(verbose) System.out.println(value);
-	 
-	            if (value > maxValue) {
-	                maxValue = value;
-	                accionMaxQ = actions[i];
-	            }
-	        }
-
-	        if(maxValue < 1) // Inicialmente estan a 0, una random
-	        {
-	          int index = new Random().nextInt(StateManager.ACCIONES.length);
-	          accionMaxQ = actions[index];
-	        }
-	        
-	        return accionMaxQ;
-	}
 	
-	private void pintaQTable(ESTADOS s)
-	{
-		ACTIONS[] actions = StateManager.ACCIONES;
 
-        System.out.println("----------Q TABLE -----------------");
-        
-        for (int i = 0; i < actions.length; i++) {
-        	 System.out.print("Actual Q<"+ s.toString() + "," );
-        	 System.out.print(actions[i]+"> = ");
-        	
-        	double value = StateManager.Q.get(new ParEstadoAccion(s, actions[i]));
-        	
-            System.out.println(value);
-        }
-	        
-        System.out.println("----------Q TABLE -----------------");
-	}
 } 
     
 /*
