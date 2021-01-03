@@ -1,15 +1,7 @@
 package qlearning;
 
 import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Random;
 
 import core.game.Observation;
@@ -20,7 +12,6 @@ import ontology.Types.ACTIONS;
 import qlearning.StateManager.ESTADOS;
 
 import tools.ElapsedCpuTimer;
-import tools.Vector2d;
 
 
 public class TestingAgent extends AbstractPlayer {
@@ -32,8 +23,6 @@ public class TestingAgent extends AbstractPlayer {
 	
 	private int numFilas;
 	private int numCol;
-	private int blockSize;
-	
 	//private char[][] mapaBlank;
 	private char[][] mapaObstaculos;
 	
@@ -66,7 +55,7 @@ public class TestingAgent extends AbstractPlayer {
         inmov = so.getImmovablePositions();
         dim = so.getWorldDimension();
 
-        blockSize = so.getBlockSize();
+        so.getBlockSize();
         
 		numCol = so.getWorldDimension().width / so.getBlockSize();
 		numFilas = so.getWorldDimension().height / so.getBlockSize();

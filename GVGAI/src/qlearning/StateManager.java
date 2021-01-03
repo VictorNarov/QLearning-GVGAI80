@@ -27,15 +27,15 @@ public class StateManager {
 		OBTENGO_GASOLINA(0),
 		ESQUIVO_OBSTACULO(0),
 		MUERTE_SEGURA(0),
-		GASOLINA_ARRIBA(0),
-		GASOLINA_ABAJO(0),
+		//GASOLINA_ARRIBA(0),
+		//GASOLINA_ABAJO(0),
 		GASOLINA_IZQDA(0),
 		GASOLINA_DCHA(0),
 		HUECO_ARRIBA(0),
-		HUECO_ABAJO(0),
+		//HUECO_ABAJO(0),
 		HUECO_IZQDA(0),
 		HUECO_DCHA(0),
-		OBSTACULO_ARRIBA(0),
+		//OBSTACULO_ARRIBA(0),
 		OBSTACULOS_IZQDA(0),
 		OBSTACULOS_DCHA(0),
 		BORDE_DCHA(0),
@@ -166,21 +166,21 @@ public class StateManager {
 		R.put(new ParEstadoAccion(ESTADOS.BORDE_DCHA,ACTIONS.ACTION_RIGHT), -100);
 		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_IZQDA,ACTIONS.ACTION_LEFT), -100);
 		R.put(new ParEstadoAccion(ESTADOS.OBSTACULOS_DCHA,ACTIONS.ACTION_RIGHT), -100);
-		R.put(new ParEstadoAccion(ESTADOS.OBSTACULO_ARRIBA,ACTIONS.ACTION_UP), -100);
+		//R.put(new ParEstadoAccion(ESTADOS.OBSTACULO_ARRIBA,ACTIONS.ACTION_UP), -100);
 		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_UP), -50);
 		R.put(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO,ACTIONS.ACTION_UP), -50);
 		
-		R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 100);
+		//R.put(new ParEstadoAccion(ESTADOS.HUECO_ABAJO,ACTIONS.ACTION_DOWN), 100);
 		R.put(new ParEstadoAccion(ESTADOS.HUECO_ARRIBA,ACTIONS.ACTION_NIL), 100);
 		R.put(new ParEstadoAccion(ESTADOS.HUECO_IZQDA,ACTIONS.ACTION_LEFT), 100);
 		R.put(new ParEstadoAccion(ESTADOS.HUECO_DCHA,ACTIONS.ACTION_RIGHT), 100);
 		
-		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ABAJO,ACTIONS.ACTION_DOWN), 75);
-		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_NIL), 100);
-		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_IZQDA,ACTIONS.ACTION_LEFT), 75);
-		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_DCHA,ACTIONS.ACTION_RIGHT), 75);
+		//R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ABAJO,ACTIONS.ACTION_DOWN), 100);
+		//R.put(new ParEstadoAccion(ESTADOS.GASOLINA_ARRIBA,ACTIONS.ACTION_NIL), 100);
+		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_IZQDA,ACTIONS.ACTION_LEFT), 100);
+		R.put(new ParEstadoAccion(ESTADOS.GASOLINA_DCHA,ACTIONS.ACTION_RIGHT), 100);
 		
-		R.put(new ParEstadoAccion(ESTADOS.NIL,ACTIONS.ACTION_NIL), 100);
+		R.put(new ParEstadoAccion(ESTADOS.NIL,ACTIONS.ACTION_NIL), 1000);
 		R.put(new ParEstadoAccion(ESTADOS.ESQUIVO_OBSTACULO,ACTIONS.ACTION_DOWN), 100);
 	}
 	
@@ -333,10 +333,12 @@ public class StateManager {
 	            }
 	        }
 
-	        if(maxValue <= 0) // Inicialmente estan a 0, una random
+	        if(maxValue == 0) // Inicialmente estan a 0, una random
 	        {
-	          int index = new Random().nextInt(StateManager.ACCIONES.length);
+	        	
+        	  int index = new Random().nextInt(StateManager.ACCIONES.length-1);
 	          accionMaxQ = actions[index];
+		        
 	        }
 	        
 	        return accionMaxQ;
@@ -346,7 +348,6 @@ public class StateManager {
 //  METODOS PERCEPCION ESTADOS
 //_____________________________________________________________________
 
-	
 	public static ESTADOS getEstadoFuturo(StateObservation obs, ACTIONS action)
 	{
 		int vidaActual = obs.getAvatarHealthPoints();
@@ -444,12 +445,12 @@ public class StateManager {
 			// SI TENGO CAPACIDAD PARA REPOSTAR Y SI HAY GASOLINA, ESTADO SEGUN LA POSICION DE LA GASOLINA
 			if(vidaActual < 11 && posGasolina[0] != -1 && posGasolina[1] != -1) { // SI HAY GASOLINA
 				ESTADOS estadoGasolina = getEstadoGasolina(posGasolina); // Obtiene el estado en funcion de la posicion de la gasolina
-				if(!estadoGasolina.equals(ESTADOS.GASOLINA_ARRIBA))
+				//if(!estadoGasolina.equals(ESTADOS.GASOLINA_ARRIBA))
 					return estadoGasolina;
 			}
 			
-			if(hayObstaculosDireccion(pos, DIRECCIONES.ARRIBA, 3.0, mapaObstaculos))
-				return ESTADOS.OBSTACULO_ARRIBA;
+			//if(hayObstaculosDireccion(pos, DIRECCIONES.ARRIBA, 3.0, mapaObstaculos))
+			//	return ESTADOS.OBSTACULO_ARRIBA;
 			
 
 /*			
@@ -502,8 +503,7 @@ public class StateManager {
 		return new int[] {numObstaculosIzqda,numObstaculosDcha};
 		
 	}
-	
-	
+		
 	private static boolean estoyRodeadoObstaculos(char[][] mapaObstaculos)
 	{
 		// X X X ||   X 
@@ -562,11 +562,11 @@ public class StateManager {
 	{
 		
 		/* Misma columna y gasolina por encima */
-		if(posGasolina[1] == posActual[1] && posGasolina[0] <= posActual[0]) 
-			return ESTADOS.GASOLINA_ARRIBA; 
+		//if(posGasolina[1] == posActual[1] && posGasolina[0] <= posActual[0]) 
+		//	return ESTADOS.GASOLINA_ARRIBA; 
 		
 		/* Gasolina a la derecha */
-		else if(posGasolina[1] > posActual[1])
+		 if(posGasolina[1] > posActual[1])
 			return ESTADOS.GASOLINA_DCHA;
 		
 		/* Gasolina a la izqda */
@@ -574,8 +574,8 @@ public class StateManager {
 			return ESTADOS.GASOLINA_IZQDA;
 		
 		/* Gasolina abajo */
-		else if(posGasolina[0] > posActual[0])
-			return ESTADOS.GASOLINA_ABAJO;	
+		//else if(posGasolina[0] > posActual[0])
+		//	return ESTADOS.GASOLINA_ABAJO;	
 		
 		return ESTADOS.NIL;
 	}

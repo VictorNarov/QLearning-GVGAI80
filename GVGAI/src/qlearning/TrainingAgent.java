@@ -28,9 +28,6 @@ public class TrainingAgent extends AbstractPlayer {
 	
 	private int numFilas;
 	private int numCol;
-	private int blockSize;
-	
-	//private char[][] mapaBlank;
 	private char[][] mapaObstaculos;
 	
 	// VARIABLES Q LEARNING
@@ -62,17 +59,11 @@ public class TrainingAgent extends AbstractPlayer {
         inmov = so.getImmovablePositions();
         dim = so.getWorldDimension();
 
-        blockSize = so.getBlockSize();
+        so.getBlockSize();
         
 		numCol = so.getWorldDimension().width / so.getBlockSize();
 		numFilas = so.getWorldDimension().height / so.getBlockSize();
 		
-		//mapaBlank = new char[numFilas][numCol];
-		//mapaObstaculos = new char[numFilas][numCol];
-		
-		//for(int i=0; i<numFilas; i++)
-		//	for(int j=0; j<numCol; j++)
-		//		mapaBlank[i][j] = ' ';
 		if(verbose) System.out.println("DIMENSION MUNDO: " + so.getWorldDimension().toString());
 		if(verbose) System.out.println("NUM FILAS = " + numFilas);
 		if(verbose) System.out.println("NUM COL = " + numCol);
@@ -124,13 +115,13 @@ public class TrainingAgent extends AbstractPlayer {
     	
     	// Seleccionar una entre las posibles acciones desde el estado actual
     	ACTIONS action;
-    	boolean randomPolicy=false; 
+    	boolean randomPolicy=true; 
     	
     	// Criterio de selección: random hasta 1/3 iteraciones
-//    	if(StateManager.iteracionActual < StateManager.numIteraciones * 0.25)
-//    		randomPolicy = true;
-//    	else
-//    		randomPolicy = false;
+    	if(StateManager.iteracionActual < StateManager.numIteraciones * 0.3)
+    		randomPolicy = true;
+    	else
+    		randomPolicy = false;
     	
     	// Criterio de selección: random
     	if(randomPolicy) {

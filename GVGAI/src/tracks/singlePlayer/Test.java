@@ -37,7 +37,7 @@ public class Test {
 		String recordActionsFile = null;// "actions_" + games[gameIdx] + "_lvl"
 	
 		
-		int levelIdx = 4; // level names from 0 to 4 (game_lvlN.txt).
+		int levelIdx = 1; // level names from 0 to 4 (game_lvlN.txt).
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 		StateManager stateManager;
 		
@@ -47,11 +47,11 @@ public class Test {
 		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
 		{
 			visuals = false;
-			boolean testingAfterTraining = false; // Probar todos los niveles despues del entrenamiento
-			boolean randomTablaQ = true; // Verdadero: crea la tabla Q con valores random, si no, a cero
-			boolean guardarGrafica = true; // Si queremos guardar una imagen de la grafica Ticks/epoca
+			boolean testingAfterTraining = true; // Probar todos los niveles despues del entrenamiento
+			boolean randomTablaQ = false; // Verdadero: crea la tabla Q con valores random, si no, a cero
+			boolean guardarGrafica = false; // Si queremos guardar una imagen de la grafica Ticks/epoca
 			stateManager = new StateManager(randomTablaQ,false);
-			StateManager.numIteraciones = 50; // Numero de partidas a jugar
+			StateManager.numIteraciones = 100; // Numero de partidas a jugar
 					
 			/*
 			 * Grafica Aprendizaje Resultado Ticks / Epoca
@@ -71,10 +71,9 @@ public class Test {
 				}
 			}
 			
-			
-			
+		
 			for (StateManager.iteracionActual = 1; StateManager.iteracionActual <= StateManager.numIteraciones; StateManager.iteracionActual++) {
-				levelIdx = 4; // level names from 0 to 4 (game_lvlN.txt).
+				levelIdx = new Random().nextInt(5); // level names from 0 to 4 (game_lvlN.txt).
 				level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 				System.out.println("\t\t\t\t\t\t\t\t\t\tIteración " + StateManager.iteracionActual + " / "+ StateManager.numIteraciones);
 				System.out.println("\t\t\t\t\t\t\t\t\t\tlevel: " + levelIdx);
@@ -95,8 +94,8 @@ public class Test {
 				graficaTicks.title("Resultado partida en Ticks / Epoca de Training");
 				graficaTicks.xlim(1, StateManager.numIteraciones);
 				graficaTicks.ylim(1, 550);
-				graficaTicks.xlabel("Epoca de Training");                  // xlabel('Days');
-				graficaTicks.ylabel("Resultado Ticks partida");                 // ylabel('Price');
+				graficaTicks.xlabel("Epoca de Training");                  
+				graficaTicks.ylabel("Resultado Ticks partida");                 
 				graficaTicks.saveas(nombreFich, 640, 480);
 				
 				File file = new File( nombreFich );
