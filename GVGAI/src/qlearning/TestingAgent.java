@@ -16,30 +16,19 @@ import tools.ElapsedCpuTimer;
 
 public class TestingAgent extends AbstractPlayer {
 	boolean verbose = StateManager.verbose;
-	
-	// VARIABLES 
+	/* Variables */
 	ArrayList<Observation>[] inmov;
 	Dimension dim; 
-	
 	private int numFilas;
 	private int numCol;
-	//private char[][] mapaBlank;
 	private char[][] mapaObstaculos;
 	
-	// VARIABLES Q LEARNING
+	/* Variables Q-Learning */
 	private int vidaAnterior;
-	
 	int numAccionesPosibles;
 	
-    /**
-     * Random generator for the agent.
-     */
-    protected Random randomGenerator;
-    /**
-     * List of available actions for the agent
-     */
-    protected ArrayList<Types.ACTIONS> actions;
-
+    protected Random randomGenerator; // Random generator for the agent.
+    protected ArrayList<Types.ACTIONS> actions; // List of available actions for the agent
 
     /**
      * Public constructor with state observation and time due.
@@ -67,12 +56,10 @@ public class TestingAgent extends AbstractPlayer {
 		// Inicializamos el modulo Util
 		Util.numCol = this.numCol;
 		Util.numFilas = this.numFilas;
-
 		
 		vidaAnterior = so.getAvatarHealthPoints();
     	numAccionesPosibles = StateManager.ACCIONES.length;
     }
-
 
     /**
      * Picks an action. This function is called every game step to request an
@@ -83,7 +70,7 @@ public class TestingAgent extends AbstractPlayer {
      */
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
     	// -----------------------------------------------------------------------
-    	// 01 - PERCEPCIÓN DEL ENTORNO
+    	// 						01 - PERCEPCIÓN DEL ENTORNO
     	// -----------------------------------------------------------------------
     	int vidaActual = stateObs.getAvatarHealthPoints();
     	
@@ -93,9 +80,8 @@ public class TestingAgent extends AbstractPlayer {
     	if(verbose) System.out.println("VIDA ACTUAL = "+vidaActual);
     	if(verbose) System.out.println("POSICION = " + posJugador[0] + "-" + posJugador[1]);
     	
-    	
-    	this.mapaObstaculos = StateManager.getMapaObstaculos(stateObs); //Actualizamos el mapa percibido
-    	mapaObstaculos[posJugador[0]][posJugador[1]] = 'O'; //Marcamos la posicion del jugador
+    	this.mapaObstaculos = StateManager.getMapaObstaculos(stateObs); // Actualizamos el mapa percibido
+    	mapaObstaculos[posJugador[0]][posJugador[1]] = 'O'; // Marcamos la posicion del jugador
 
     	if(verbose) Util.pintaMapaObstaculos(mapaObstaculos);
     	
@@ -105,34 +91,18 @@ public class TestingAgent extends AbstractPlayer {
     	if(verbose) System.out.println("Estado actual: " + estadoActual.toString());
     	
     	// -----------------------------------------------------------------------
-    	// ALGORITMO Q LEARNING EXPLOTACION DE LA TABLA Q
+    	// 				ALGORITMO Q LEARNING EXPLOTACION DE LA TABLA Q
     	// -----------------------------------------------------------------------
-    	
     	if(verbose) StateManager.pintaQTable(estadoActual);
     	
-    	    	
     	// Criterio seleccion: maxQ
     	ACTIONS action = StateManager.getAccionMaxQ(estadoActual);
     	
     	if(verbose) System.out.println("--> DECIDE HACER: " + action.toString());
-        
    
 		vidaAnterior = vidaActual;
 		
-	  	
-//		if(verbose)
-//			try {
-//				Thread.sleep(50);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-		
         return action;
     }
-
-	
-	
-
 } 
     

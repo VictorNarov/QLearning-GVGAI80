@@ -46,13 +46,13 @@ public class Test {
 		
 		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
 		{
-			visuals = false;
+			visuals = true;
 			boolean testingAfterTraining = true; // Probar todos los niveles despues del entrenamiento
 			boolean randomTablaQ = false; // Verdadero: crea la tabla Q con valores random, si no, a cero
 			boolean guardarGrafica = false; // Si queremos guardar una imagen de la grafica Ticks/epoca
-			stateManager = new StateManager(randomTablaQ,false);
+			stateManager = new StateManager(randomTablaQ,verbose);
 			StateManager.numIteraciones = 100; // Numero de partidas a jugar
-					
+
 			/*
 			 * Grafica Aprendizaje Resultado Ticks / Epoca
 			 */

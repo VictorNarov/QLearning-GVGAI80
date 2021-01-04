@@ -1,6 +1,10 @@
 package qlearning;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -8,6 +12,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Scanner;
+
+import javax.imageio.ImageIO;
 
 import core.game.StateObservation;
 import core.game.Observation;
@@ -21,6 +27,9 @@ public class StateManager {
 	public static int numIteraciones;
 	public static int iteracionActual;
 	Random randomGenerator;
+	
+	// Diccionario ESTADOS-BOOLEAN, que indicará si un estado ha sido capturado en imagen
+	public static HashMap <ESTADOS, Boolean> diccionarioEstadoCaptura = new HashMap <ESTADOS, Boolean> ();
 	
 	/* Contenedor de constantes para identificar los estados */
 	public static enum ESTADOS {
@@ -58,11 +67,9 @@ public class StateManager {
 			for(ESTADOS s : ESTADOS.values()) {
 				if(s.toString().equals(nombreEstado))
 					return s;
-					
 			}
 			
 			return null;
-			
 		}
 	}
 	
@@ -90,6 +97,10 @@ public class StateManager {
 		inicializaTablaQ(randomTablaQ);
 		
 		StateManager.verbose = verbose;
+		
+		for(ESTADOS estado : StateManager.ESTADOS.values()) {
+			diccionarioEstadoCaptura.put(estado, false);
+		}
 	}
 	
 	public StateManager(String ficheroTablaQ, boolean verbose)
@@ -102,12 +113,20 @@ public class StateManager {
 		cargaTablaQ(ficheroTablaQ);
 		
 		StateManager.verbose = verbose;
-		
 	}
 
-// _____________________________________________________________________
-//  METODOS TABLAS APRENDIZAJE
-//_____________________________________________________________________	
+	public static void capturaEstado(String fileName) throws Exception {
+		   Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		   Rectangle screenRectangle = new Rectangle(8,2, 240, 390);
+		   
+		   Robot robot = new Robot();
+		   BufferedImage image = robot.createScreenCapture(screenRectangle);
+		   ImageIO.write(image, "bmp", new File("./capturas/" + fileName + ".bmp"));
+    }
+	
+// ---------------------------------------------------------------------
+//  					METODOS TABLAS APRENDIZAJE
+// ---------------------------------------------------------------------
 	private void inicializaTablaR()
 	{
 		R = new HashMap<ParEstadoAccion, Integer>(numEstados*numAcciones);
@@ -441,7 +460,6 @@ public class StateManager {
 			
 			if (verbose) System.out.println("POS GASOLINA: " + posGasolina[0] + "-" + posGasolina[1]);
 			
-			
 			// SI TENGO CAPACIDAD PARA REPOSTAR Y SI HAY GASOLINA, ESTADO SEGUN LA POSICION DE LA GASOLINA
 			if(vidaActual < 11 && posGasolina[0] != -1 && posGasolina[1] != -1) { // SI HAY GASOLINA
 				ESTADOS estadoGasolina = getEstadoGasolina(posGasolina); // Obtiene el estado en funcion de la posicion de la gasolina
@@ -452,7 +470,6 @@ public class StateManager {
 			//if(hayObstaculosDireccion(pos, DIRECCIONES.ARRIBA, 3.0, mapaObstaculos))
 			//	return ESTADOS.OBSTACULO_ARRIBA;
 			
-
 /*			
 			if(numObstaculosDcha >= 1 && numObstaculosIzqda >= 1 || mapaObstaculos[posActual[0]-1][posActual[1]] == ' ' && mapaObstaculos[posActual[0]-2][posActual[1]] == ' ')
 				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
