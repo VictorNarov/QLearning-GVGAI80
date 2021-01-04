@@ -599,6 +599,7 @@ public class StateManager {
 	
 	public void getContadoresEstados()
 	{
+		System.out.println("____________ CONTADORES ESTADOS _____________________");
 		for (ESTADOS s : ESTADOS.values()) {
 			
 			System.out.println(s.toString() + " : " + s.getContador());

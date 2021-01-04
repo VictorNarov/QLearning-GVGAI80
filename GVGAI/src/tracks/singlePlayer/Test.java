@@ -42,15 +42,15 @@ public class Test {
 		StateManager stateManager;
 		
 		boolean training = true; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
-		boolean verbose = true; // Mostrar informacion de la partida mientras se ejecuta
+		boolean verbose = false; // Mostrar informacion de la partida mientras se ejecuta
 		
 		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
 		{
 			visuals = true;
 			boolean testingAfterTraining = true; // Probar todos los niveles despues del entrenamiento
-			boolean randomTablaQ = false; // Verdadero: crea la tabla Q con valores random, si no, a cero
-			boolean guardarGrafica = false; // Si queremos guardar una imagen de la grafica Ticks/epoca
-			stateManager = new StateManager(randomTablaQ,verbose);
+			boolean randomTablaQ = true; // Verdadero: crea la tabla Q con valores random, si no, a cero
+			boolean guardarGrafica = true; // Si queremos guardar una imagen de la grafica Ticks/epoca
+			stateManager = new StateManager(randomTablaQ,false);
 			StateManager.numIteraciones = 100; // Numero de partidas a jugar
 
 			/*
@@ -75,7 +75,7 @@ public class Test {
 			for (StateManager.iteracionActual = 1; StateManager.iteracionActual <= StateManager.numIteraciones; StateManager.iteracionActual++) {
 				levelIdx = new Random().nextInt(5); // level names from 0 to 4 (game_lvlN.txt).
 				level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
-				System.out.println("\t\t\t\t\t\t\t\t\t\tIteración " + StateManager.iteracionActual + " / "+ StateManager.numIteraciones);
+				System.out.println("\t\t\t\t\t\t\t\t\t\tIteraciï¿½n " + StateManager.iteracionActual + " / "+ StateManager.numIteraciones);
 				System.out.println("\t\t\t\t\t\t\t\t\t\tlevel: " + levelIdx);
 				
 				double ticksPartida = ArcadeMachine.runOneGame(game, level1, visuals, QLearningTraining, recordActionsFile, seed, 0)[2];
@@ -87,7 +87,7 @@ public class Test {
 			stateManager.saveQTable();
 			if(guardarGrafica) {
 				String fecha = java.time.LocalDate.now().toString();
-				String nombreFich = fecha+"_TicksEpoca.jpeg";
+				String nombreFich = fecha+"_PoliticaRandom.jpeg";
 				
 				graficaTicks.plot(X, Y, "-r", 2.0f, "TICKS");
 				graficaTicks.RenderPlot(); 
@@ -140,11 +140,11 @@ public class Test {
 			ArcadeMachine.runOneGame(game, level1, visuals, QLearningTesting, recordActionsFile, seed, 0);
 		}
 		
-		System.out.println("____________ CONTADORES ESTADOS _____________________");
-		stateManager.getContadoresEstados();
+		
+		//stateManager.getContadoresEstados();
 		
 
-		StateManager.pintaQTableResumen();
+		//StateManager.pintaQTableResumen();
 		
 		
 

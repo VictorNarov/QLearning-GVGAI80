@@ -20,6 +20,9 @@ public class TrainingAgent extends AbstractPlayer {
 	/* Parametros del Aprendizaje */
 	private double alpha = 0.1; // Factor Exploracion tamaño del paso
 	private double gamma = 0.2; // Factor descuento recompensa futura
+
+	
+	boolean randomPolicy=false; // RandomPolicy o MaxQ
 	
 	/* Variables */
 	ArrayList<Observation>[] inmov;
@@ -113,7 +116,7 @@ public class TrainingAgent extends AbstractPlayer {
     	
     	// Seleccionar una entre las posibles acciones desde el estado actual
     	ACTIONS action;
-    	boolean randomPolicy=true; 
+    	
     	
     	// Criterio de selección: random hasta 1/3 iteraciones
     	if(StateManager.iteracionActual < StateManager.numIteraciones * 0.3)
