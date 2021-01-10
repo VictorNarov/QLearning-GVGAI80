@@ -41,17 +41,17 @@ public class Test {
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 		StateManager stateManager;
 		
-		boolean training = true; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
+		boolean training = false; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
 		boolean verbose = false; // Mostrar informacion de la partida mientras se ejecuta
 		
 		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
 		{
-			visuals = true;
-			boolean testingAfterTraining = true; // Probar todos los niveles despues del entrenamiento
+			visuals = false;
+			boolean testingAfterTraining = false; // Probar todos los niveles despues del entrenamiento
 			boolean randomTablaQ = true; // Verdadero: crea la tabla Q con valores random, si no, a cero
-			boolean guardarGrafica = true; // Si queremos guardar una imagen de la grafica Ticks/epoca
+			boolean guardarGrafica = false; // Si queremos guardar una imagen de la grafica Ticks/epoca
 			stateManager = new StateManager(randomTablaQ,false);
-			StateManager.numIteraciones = 100; // Numero de partidas a jugar
+			StateManager.numIteraciones = 500; // Numero de partidas a jugar
 
 			/*
 			 * Grafica Aprendizaje Resultado Ticks / Epoca
@@ -141,7 +141,7 @@ public class Test {
 		}
 		
 		
-		//stateManager.getContadoresEstados();
+		stateManager.getContadoresEstados();
 		
 
 		//StateManager.pintaQTableResumen();

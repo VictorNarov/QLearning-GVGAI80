@@ -61,8 +61,8 @@ public class TrainingAgent extends AbstractPlayer {
 		if(verbose) System.out.println("NUM COL = " + numCol);
 		
 		// Inicializamos el modulo Util
-		Util.numCol = this.numCol;
-		Util.numFilas = this.numFilas;
+		StateManager.numCol = this.numCol;
+		StateManager.numFilas = this.numFilas;
 		
 		vidaAnterior = so.getAvatarHealthPoints();
     	numAccionesPosibles = StateManager.ACCIONES.length;
@@ -90,7 +90,7 @@ public class TrainingAgent extends AbstractPlayer {
     	this.mapaObstaculos = StateManager.getMapaObstaculos(stateObs); // Actualizamos el mapa percibido
     	mapaObstaculos[posJugador[0]][posJugador[1]] = 'O'; // Marcamos la posicion del jugador
 
-    	if(verbose) Util.pintaMapaObstaculos(mapaObstaculos);
+    	if(verbose) StateManager.pintaMapaObstaculos(mapaObstaculos);
     	
     	// Percibimos el estado actual e incrementamos su contador
     	ESTADOS estadoActual = StateManager.getEstado(stateObs, vidaAnterior, this.mapaObstaculos);

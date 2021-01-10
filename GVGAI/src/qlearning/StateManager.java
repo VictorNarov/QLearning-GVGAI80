@@ -18,7 +18,6 @@ import javax.imageio.ImageIO;
 import core.game.StateObservation;
 import core.game.Observation;
 import ontology.Types.ACTIONS;
-import qlearning.StateManager.ESTADOS;
 import tools.Vector2d;
 
 public class StateManager {
@@ -27,6 +26,10 @@ public class StateManager {
 	public static int numIteraciones;
 	public static int iteracionActual;
 	Random randomGenerator;
+	
+	//Variables comunes a varias clases
+	public static int numCol;
+	public static int numFilas;
 	
 	// Diccionario ESTADOS-BOOLEAN, que indicará si un estado ha sido capturado en imagen
 	public static HashMap <ESTADOS, Boolean> diccionarioEstadoCaptura = new HashMap <ESTADOS, Boolean> ();
@@ -395,7 +398,7 @@ public class StateManager {
 		if(posActual[1] <= 2)
 			return ESTADOS.BORDE_IZQDA;
 		
-		if(posActual[1] >= Util.numCol*2-4)
+		if(posActual[1] >= numCol*2-4)
 			return ESTADOS.BORDE_DCHA;
 		
 		if(!hayObstaculosDireccion(pos, DIRECCIONES.ARRIBA, 1.0, mapaObstaculos) &&
@@ -431,7 +434,7 @@ public class StateManager {
 					return ESTADOS.HUECO_ARRIBA;
 			}
 			
-			if(posActual[0]+1 < Util.numFilas) {
+			if(posActual[0]+1 < numFilas) {
 				if(mapaObstaculos[posActual[0]+1][posActual[1]] == ' ')
 					return ESTADOS.HUECO_ABAJO;
 			}
@@ -443,7 +446,7 @@ public class StateManager {
 				
 			}
 			
-			if(posActual[0]+1 < Util.numCol) {
+			if(posActual[0]+1 < numCol) {
 			
 				if(mapaObstaculos[posActual[0]][posActual[1]+1] == ' ')
 					return ESTADOS.HUECO_DCHA;
@@ -474,11 +477,11 @@ public class StateManager {
 			if(numObstaculosDcha >= 1 && numObstaculosIzqda >= 1 || mapaObstaculos[posActual[0]-1][posActual[1]] == ' ' && mapaObstaculos[posActual[0]-2][posActual[1]] == ' ')
 				return ESTADOS.ESQUIVO_OBSTACULO; // ESQUIVO OBSTACULOS
 			
-			if(posActual[0]-1 > Util.numFilas)	
+			if(posActual[0]-1 > numFilas)	
 				if(mapaObstaculos[posActual[0]-1][posActual[1]] == 'X' || mapaObstaculos[posActual[0]-2][posActual[1]] == 'X' || mapaObstaculos[posActual[0]-3][posActual[1]] == 'X' || mapaObstaculos[posActual[0]-4][posActual[1]] == 'X')
 					return ESTADOS.OBSTACULO_ARRIBA;
 			
-			if(posActual[1]+1 < Util.numCol)
+			if(posActual[1]+1 < numCol)
 				if(mapaObstaculos[posActual[0]-1][posActual[1]+1] == 'X' || mapaObstaculos[posActual[0]][posActual[1]+1] == 'X')
 					return ESTADOS.OBSTACULOS_DCHA;
 			
@@ -496,8 +499,7 @@ public class StateManager {
 	 * Devuelve un array de dos enteros indicando el numero de obstaculos a la izqda y a la derecha del agente
 	 */
 	private static int[] getObstaculosFila(char[][] mapaObstaculos)
-	{
-		int numCol = Util.numCol;
+	{	
 		int numObstaculosDcha = 0;
 		int numObstaculosIzqda = 0;
 				
@@ -561,8 +563,8 @@ public class StateManager {
 		int posGasolina[] = new int[] {-1,-1};
 		boolean encontrado = false;
 
-			for(int i=0; i< Util.numFilas*2-1; i++) {
-				for (int j = 2; j < Util.numCol*2-2; j++)  //Quitando los arboles del borde
+			for(int i=0; i< numFilas*2-1; i++) {
+				for (int j = 2; j < numCol*2-2; j++)  //Quitando los arboles del borde
 					if(mapaObstaculos[i][j] == 'G') {
 						posGasolina = new int[]{i,j};
 						encontrado = true;
@@ -619,11 +621,11 @@ public class StateManager {
 		
 		if(verbose) System.out.println("Indice fila pos jugador: " + indiceMapaJugador[0]);
 		if(verbose) System.out.println("Indice ultima casilla: "+ indiceUltimaCasilla);
-		if(verbose) System.out.println("Maxima col a explorar = " + (Util.numCol*2-4)/2);
+		if(verbose) System.out.println("Maxima col a explorar = " + (numCol*2-4)/2);
 		
 		boolean huecoValido = true;
 		
-		for(int iCol=2; iCol <= (Util.numCol*2-4); iCol++) { // De izquierda a derecha del mapa
+		for(int iCol=2; iCol <= (numCol*2-4); iCol++) { // De izquierda a derecha del mapa
 			huecoValido = true;
 			for(int iFila=indiceMapaJugador[0]; iFila >= indiceUltimaCasilla; iFila--)  //Desde fila del jugador hasta la ultima casilla a explorar
 				if(mapaObstaculos[iFila][iCol] == 'X')
@@ -654,7 +656,7 @@ public class StateManager {
 			}
 				
 			if(huecoValido)
-				if(iCol+1 < Util.numCol*2-2) 
+				if(iCol+1 < numCol*2-2) 
 					for(int iFila2=indiceMapaJugador[0]-1; iFila2 >= indiceUltimaCasilla; iFila2--) 
 						if(mapaObstaculos[iFila2][iCol+1] == 'X') {
 							huecoValido = false;
@@ -665,7 +667,7 @@ public class StateManager {
 			{
 				huecoValido = false;
 				
-				if(iCol+1 < Util.numCol*2-2) 
+				if(iCol+1 < numCol*2-2) 
 					for(int iFila2=indiceMapaJugador[0]-1; iFila2 >= indiceUltimaCasilla; iFila2--) 
 						if(mapaObstaculos[iFila2][iCol-2] == 'X') {
 							huecoValido = true;
@@ -673,7 +675,7 @@ public class StateManager {
 					}
 				
 				if(!huecoValido)
-					if(iCol+1 < Util.numCol*2-2) 
+					if(iCol+1 < numCol*2-2) 
 						for(int iFila2=indiceMapaJugador[0]-1; iFila2 >= indiceUltimaCasilla; iFila2--) 
 							if(mapaObstaculos[iFila2][iCol+2] == 'X') {
 								huecoValido = true;
@@ -742,10 +744,10 @@ public class StateManager {
 	public static char[][] getMapaObstaculos(StateObservation obs)
 	{
 		// El desplazamiento de un jugador es en 0.5 casillas
-		char[][] mapaObstaculos = new char[Util.numFilas*2][Util.numCol*2];
+		char[][] mapaObstaculos = new char[numFilas*2][numCol*2];
 		
-		for(int i=0; i<Util.numFilas*2; i++)
-			for(int j=0; j<Util.numCol*2; j++)
+		for(int i=0; i<numFilas*2; i++)
+			for(int j=0; j<numCol*2; j++)
 				mapaObstaculos[i][j] = ' ';
 		
 		
@@ -793,8 +795,8 @@ public class StateManager {
 	 */
 	public static double[] getCeldaPreciso(Vector2d vector, Dimension dim) {
 		
-    	double x = vector.x /  dim.getWidth() * Util.numCol;
-    	double y = vector.y /  dim.getHeight() * Util.numFilas;
+    	double x = vector.x /  dim.getWidth() * numCol;
+    	double y = vector.y /  dim.getHeight() * numFilas;
     	
     	return new double[] {y,x};
 	}
@@ -833,10 +835,10 @@ public class StateManager {
 				
 			case "ABAJO":
 				
-				if(indiceMapaJugador[0] + distancia*2 < Util.numFilas*2)// Limitamos el radio de busqueda al limite del mapa
+				if(indiceMapaJugador[0] + distancia*2 < numFilas*2)// Limitamos el radio de busqueda al limite del mapa
 					indiceUltimaCasilla = indiceMapaJugador[0] + ((int)distancia*2);
 				else // Se sale del mapa
-					indiceUltimaCasilla = Util.numFilas*2-1; 
+					indiceUltimaCasilla = numFilas*2-1; 
 				
 				for(int i=indiceMapaJugador[0]+1; i <= indiceUltimaCasilla; i++)
 					if(mapaObstaculos[i][indiceMapaJugador[1]] == 'X')
@@ -856,10 +858,10 @@ public class StateManager {
 				break;
 				
 			case "DCHA":
-				if(indiceMapaJugador[1] + distancia*2 < Util.numCol*2)// Limitamos el radio de busqueda al limite del mapa
+				if(indiceMapaJugador[1] + distancia*2 < numCol*2)// Limitamos el radio de busqueda al limite del mapa
 					indiceUltimaCasilla = indiceMapaJugador[1] + ((int)distancia*2);
 				else // Se sale del mapa
-					indiceUltimaCasilla = Util.numCol*2-1; 
+					indiceUltimaCasilla = numCol*2-1; 
 				
 				for(int i=indiceMapaJugador[1]+1; i <= indiceUltimaCasilla; i++)
 					if(mapaObstaculos[i][indiceMapaJugador[1]] == 'X')
@@ -894,7 +896,7 @@ public class StateManager {
 					if(mapaObstaculos[i][indiceMapaJugador[1]] == 'X')
 						return true;
 				
-				if(indiceMapaJugador[1]+1 < Util.numCol*2-1)
+				if(indiceMapaJugador[1]+1 < numCol*2-1)
 					for(int i=indiceMapaJugador[0]-1; i >= indiceUltimaCasilla; i--) //Columna de la derecha
 						if(mapaObstaculos[i][indiceMapaJugador[1]+1] == 'X')
 							return true;
@@ -908,10 +910,10 @@ public class StateManager {
 				
 			case "ABAJO":
 				
-				if(indiceMapaJugador[0] + distancia*2 < Util.numFilas*2)// Limitamos el radio de busqueda al limite del mapa
+				if(indiceMapaJugador[0] + distancia*2 < numFilas*2)// Limitamos el radio de busqueda al limite del mapa
 					indiceUltimaCasilla = indiceMapaJugador[0] + ((int)distancia*2);
 				else // Se sale del mapa
-					indiceUltimaCasilla = Util.numFilas*2-1; 
+					indiceUltimaCasilla = numFilas*2-1; 
 				
 				for(int i=indiceMapaJugador[0]+1; i <= indiceUltimaCasilla; i++)
 					if(mapaObstaculos[i][indiceMapaJugador[1]] == 'X')
@@ -940,7 +942,7 @@ public class StateManager {
 						
 					}
 				
-				if(indiceMapaJugador[0]+1 < Util.numFilas*2-1)
+				if(indiceMapaJugador[0]+1 < numFilas*2-1)
 					for(int i=indiceMapaJugador[1]-1; i >= indiceUltimaCasilla; i--) //Columna de la abajo a la izqda
 						if(mapaObstaculos[indiceMapaJugador[0]+1][i] == 'X')
 							return true;
@@ -948,10 +950,10 @@ public class StateManager {
 				break;
 				
 			case "DCHA":
-				if(indiceMapaJugador[1] + distancia*2 < Util.numCol*2 - 1)// Limitamos el radio de busqueda al limite del mapa
+				if(indiceMapaJugador[1] + distancia*2 < numCol*2 - 1)// Limitamos el radio de busqueda al limite del mapa
 					indiceUltimaCasilla = indiceMapaJugador[1] + ((int)distancia*2);
 				else // Se sale del mapa
-					indiceUltimaCasilla = Util.numCol*2-1; 
+					indiceUltimaCasilla = numCol*2-1; 
 				
 				for(int i=indiceMapaJugador[1]+1; i <= indiceUltimaCasilla; i++)
 					if(mapaObstaculos[indiceMapaJugador[0]][i] == 'X')
@@ -962,7 +964,7 @@ public class StateManager {
 						if(mapaObstaculos[indiceMapaJugador[0]-1][i] == 'X')
 							return true;
 				
-				if(indiceMapaJugador[0]+1 < Util.numFilas*2-1)
+				if(indiceMapaJugador[0]+1 < numFilas*2-1)
 					for(int i=indiceMapaJugador[1]+1; i <= indiceUltimaCasilla; i++) //Columna de la abajo a la izqda
 						if(mapaObstaculos[indiceMapaJugador[0]+1][i] == 'X')
 							return true;
@@ -1013,5 +1015,17 @@ public class StateManager {
         }
 	        
         System.out.println("_________________________________________________________");
+	}
+	
+	public static void pintaMapaObstaculos(char [][] mapaObstaculos)
+	{
+		
+		System.out.println("-----------------------------------");
+		for(int i=0; i<numFilas*2; i++) {
+    		System.out.println();
+    		for(int j=0; j<numCol*2; j++)
+    			System.out.print(mapaObstaculos[i][j]);
+    	}
+    	System.out.println();
 	}
 }
