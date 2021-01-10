@@ -37,17 +37,17 @@ public class Test {
 		String recordActionsFile = null;// "actions_" + games[gameIdx] + "_lvl"
 	
 		
-		int levelIdx = 1; // level names from 0 to 4 (game_lvlN.txt).
+		int levelIdx = 4; // level names from 0 to 4 (game_lvlN.txt).
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 		StateManager stateManager;
 		
-		boolean training = false; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
+		boolean training = true; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
 		boolean verbose = false; // Mostrar informacion de la partida mientras se ejecuta
 		
 		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
 		{
 			visuals = false;
-			boolean testingAfterTraining = false; // Probar todos los niveles despues del entrenamiento
+			boolean testingAfterTraining = true; // Probar todos los niveles despues del entrenamiento
 			boolean randomTablaQ = true; // Verdadero: crea la tabla Q con valores random, si no, a cero
 			boolean guardarGrafica = false; // Si queremos guardar una imagen de la grafica Ticks/epoca
 			stateManager = new StateManager(randomTablaQ,false);
@@ -75,7 +75,7 @@ public class Test {
 			for (StateManager.iteracionActual = 1; StateManager.iteracionActual <= StateManager.numIteraciones; StateManager.iteracionActual++) {
 				levelIdx = new Random().nextInt(5); // level names from 0 to 4 (game_lvlN.txt).
 				level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
-				System.out.println("\t\t\t\t\t\t\t\t\t\tIteraciï¿½n " + StateManager.iteracionActual + " / "+ StateManager.numIteraciones);
+				System.out.println("\t\t\t\t\t\t\t\t\t\tIteración " + StateManager.iteracionActual + " / "+ StateManager.numIteraciones);
 				System.out.println("\t\t\t\t\t\t\t\t\t\tlevel: " + levelIdx);
 				
 				double ticksPartida = ArcadeMachine.runOneGame(game, level1, visuals, QLearningTraining, recordActionsFile, seed, 0)[2];
@@ -111,10 +111,11 @@ public class Test {
 			
 			if(testingAfterTraining) // Probar todos los niveles
 			{
-				double[] ticksPartidas = new double[5];
+				visuals = true;
+				double[] ticksPartidas = new double[7];
 				
 				stateManager = new StateManager("TablaQ.csv", verbose);
-				for (int i = 0; i <= 4; i++) {
+				for (int i = 0; i <= 6; i++) {
 				
 					levelIdx = i; // level names from 0 to 4 (game_lvlN.txt).
 					level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
@@ -124,12 +125,12 @@ public class Test {
 				System.out.println("____________________________________________________");
 				System.out.println("____________ ESTADISTICAS PARTIDAS _________________");
 				double total = 0;
-				for(int i = 0; i <= 4; i++) {
+				for(int i = 0; i <= 6; i++) {
 						System.out.println("TICKS JUEGO " + i + " =\t"+ ticksPartidas[i]);
 						total += ticksPartidas[i];
 				}
 				
-				System.out.println("MEDIA TICKS =\t" + total / 5.0);
+				System.out.println("MEDIA TICKS =\t" + total / 7.0);
 				System.out.println("____________________________________________________");
 				
 			}
