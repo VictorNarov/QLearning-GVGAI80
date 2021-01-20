@@ -42,7 +42,7 @@ public class Test {
 		StateManager stateManager;
 		
 		boolean training = true; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
-		boolean verbose = false; // Mostrar informacion de la partida mientras se ejecuta
+		boolean verbose = true; // Mostrar informacion de la partida mientras se ejecuta
 		
 		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
 		{
@@ -145,7 +145,7 @@ public class Test {
 		stateManager.getContadoresEstados();
 		
 
-		//StateManager.pintaQTableResumen();
+		StateManager.pintaQTableResumen();
 		
 		
 
