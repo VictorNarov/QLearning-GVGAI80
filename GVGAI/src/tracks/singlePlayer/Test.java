@@ -41,7 +41,7 @@ public class Test {
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 		StateManager stateManager;
 		
-		boolean training = true; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
+		boolean training = false; // Modo entrenamiento, crea una nueva tabla Q y juega M partidas aleatorias
 		boolean verbose = true; // Mostrar informacion de la partida mientras se ejecuta
 		
 		if(training)	// Crea la tabla Q a random y juega partidas con acciones aleatorias
